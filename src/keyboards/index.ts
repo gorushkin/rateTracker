@@ -2,12 +2,15 @@ import {
   type KeyboardButton,
   type ReplyKeyboardMarkup,
   type BotCommand,
-  InlineKeyboardButton,
 } from 'node-telegram-bot-api';
+import { User } from '../entity/database';
 
 export enum Button {
   GET_RATES = 'Get rates',
   SETTINGS = 'Settings',
+  SYSTEM_INFO = 'System info',
+  VIEW_LOGS = 'View logs',
+  BACK = 'BACK',
 }
 
 export enum Command {
@@ -15,19 +18,12 @@ export enum Command {
   SETTINGS = 'settings',
 }
 
-const buttonCommandMapping: Record<Button, Command> = {
-  [Button.GET_RATES]: Command.GET_RATES,
-  [Button.SETTINGS]: Command.SETTINGS,
-};
+const compareCommand = (command: Command) => (text?: string) =>
+  text === `/${command}`;
 
+export const isGetRates = compareCommand(Command.GET_RATES);
 
-const commandButtonMapping: Record<Command, Button> = {
-  [Command.GET_RATES]: Button.GET_RATES,
-  [Command.SETTINGS]: Button.SETTINGS,
-}
-
-export const getCommandFromButton = (button: Button): Command =>
-  buttonCommandMapping[button];
+export const isSettings = compareCommand(Command.SETTINGS);
 
 export const commands: BotCommand[] = [
   { command: Command.GET_RATES, description: 'Get rates' },
@@ -38,6 +34,14 @@ const getReplyButton = (buttontext: Button): KeyboardButton => ({
   text: buttontext,
 });
 
+const getRatesButton = getReplyButton(Button.GET_RATES);
+
+const getSettingsButton = getReplyButton(Button.SETTINGS);
+
+const getSystemInfoButton = getReplyButton(Button.SYSTEM_INFO);
+
+const getLogsButton = getReplyButton(Button.VIEW_LOGS);
+
 const getReplyKeyboard = (buttons: KeyboardButton[][]): ReplyKeyboardMarkup => {
   return {
     keyboard: buttons,
@@ -46,12 +50,14 @@ const getReplyKeyboard = (buttons: KeyboardButton[][]): ReplyKeyboardMarkup => {
   };
 };
 
-export const defaultReplyKeyboard = getReplyKeyboard([
-  [getReplyButton(Button.GET_RATES), getReplyButton(Button.SETTINGS)],
-]);
+const getUserButtons = (user: User) => [
+  [getRatesButton, getSettingsButton],
+  ...(user.isAdmin() ? [[getSystemInfoButton]] : [[]]),
+];
 
-const getRatesButton = getReplyButton(Button.GET_RATES);
+const AdminButtons = [[getSystemInfoButton, getLogsButton]];
 
-const getInlineKeyboard = (buttons: InlineKeyboardButton[][]) => ({
-  inline_keyboard: buttons
-});
+export const getDefaultReplyKeyboard = (user: User) =>
+  getReplyKeyboard(getUserButtons(user));
+
+export const getAdminReplyKeyboard = () => getReplyKeyboard(AdminButtons);

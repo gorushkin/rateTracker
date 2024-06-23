@@ -1,28 +1,29 @@
 import TelegramBot, { ReplyKeyboardMarkup } from 'node-telegram-bot-api';
-import { defaultReplyKeyboard } from '../keyboards';
+import { getAdminReplyKeyboard, getDefaultReplyKeyboard } from '../keyboards';
 import { getRates } from '../api';
+import { DB, User } from '../entity/database';
+import { logger } from '../entity/log';
 
 class BotController {
-  bot: TelegramBot;
-
-  constructor(bot: TelegramBot) {
-    this.bot = bot;
-  }
+  constructor(
+    public bot: TelegramBot,
+    public db: DB,
+  ) {}
 
   sendMessage = (
-    id: number,
+    user: User,
     message: string,
     keyboard: ReplyKeyboardMarkup,
   ) => {
-    this.bot.sendMessage(id, message, {
+    this.bot.sendMessage(user.id, message, {
       reply_markup: {
         ...keyboard,
       },
     });
   };
 
-  onGetRates = async (msg: TelegramBot.Message) => {
-    const id = msg.chat.id;
+  onGetRates = async (user: User) => {
+    logger.addLog('Getting rates', user);
 
     const rates = await getRates();
 
@@ -34,13 +35,54 @@ class BotController {
 
     const message = `Rates at ${date}:\n\n${ratesString}`;
 
-    this.sendMessage(id, message, defaultReplyKeyboard);
+    this.sendMessage(user, message, getDefaultReplyKeyboard(user));
   };
 
-  defaultResponse = (msg: TelegramBot.Message) => {
-    const id = msg.chat.id;
+  onSettings = async (user: User) => {
+    logger.addLog('Settings', user);
 
-    this.sendMessage(id, "let's do something!", defaultReplyKeyboard);
+    const message = "It doesn't work yet";
+
+    this.sendMessage(user, message, getDefaultReplyKeyboard(user));
+  };
+
+  onSystemInfo = (user: User) => {
+    logger.addLog('System info', user);
+
+    const users = this.db
+      .showInfo()
+      .map(
+        ({ id, username, role }) => `${id}: ${role} ${username ?? 'no name'}`,
+      )
+      .join('\n');
+
+    const message = `Current users:\n\n${users}`;
+
+    this.sendMessage(user, message, getAdminReplyKeyboard());
+  };
+
+  onViewLogs = (user: User) => {
+    logger.addLog('View logs', user);
+
+    const logs = logger.getLogs();
+
+    const logsString = logs
+      .map(({ time, message, id }) => `${id}: ${time} - ${message}`)
+      .join('\n');
+
+    const message = `Logs:\n\n${logsString}`;
+
+    this.sendMessage(user, message, getAdminReplyKeyboard());
+  };
+
+  defaultResponse = (user: User) => {
+    logger.addLog('Default response', user);
+
+    this.sendMessage(
+      user,
+      "let's do something!",
+      getDefaultReplyKeyboard(user),
+    );
   };
 }
 
