@@ -1,5 +1,5 @@
 import TelegramBot, { ReplyKeyboardMarkup } from 'node-telegram-bot-api';
-import { getAdminReplyKeyboard, getDefaultReplyKeyboard } from '../keyboards';
+import { keyboards } from '../keyboards';
 import { getRates } from '../api';
 import { DB, User } from '../entity/database';
 import { logger } from '../entity/log';
@@ -35,7 +35,11 @@ class BotController {
 
     const message = `Rates at ${date}:\n\n${ratesString}`;
 
-    this.sendMessage(user, message, getDefaultReplyKeyboard(user));
+    const keyboard = user.isAdmin()
+      ? keyboards.defaultAdminReplyKeyboard
+      : keyboards.defaultUserReplyKeyboard;
+
+    this.sendMessage(user, message, keyboard);
   };
 
   onSettings = async (user: User) => {
@@ -43,7 +47,7 @@ class BotController {
 
     const message = "It doesn't work yet";
 
-    this.sendMessage(user, message, getDefaultReplyKeyboard(user));
+    this.sendMessage(user, message, keyboards.settingsReplyKeyboard);
   };
 
   onSystemInfo = (user: User) => {
@@ -58,7 +62,7 @@ class BotController {
 
     const message = `Current users:\n\n${users}`;
 
-    this.sendMessage(user, message, getAdminReplyKeyboard());
+    this.sendMessage(user, message, keyboards.adminReplyKeyboard);
   };
 
   onViewLogs = (user: User) => {
@@ -72,17 +76,17 @@ class BotController {
 
     const message = `Logs:\n\n${logsString}`;
 
-    this.sendMessage(user, message, getAdminReplyKeyboard());
+    this.sendMessage(user, message, keyboards.adminReplyKeyboard);
   };
 
   defaultResponse = (user: User) => {
     logger.addLog('Default response', user);
 
-    this.sendMessage(
-      user,
-      "let's do something!",
-      getDefaultReplyKeyboard(user),
-    );
+    const keyboard = user.isAdmin()
+      ? keyboards.defaultAdminReplyKeyboard
+      : keyboards.defaultUserReplyKeyboard;
+
+    this.sendMessage(user, "I didn't got you!!!", keyboard);
   };
 }
 

@@ -21,9 +21,28 @@ export enum Command {
 const compareCommand = (command: Command) => (text?: string) =>
   text === `/${command}`;
 
-export const isGetRates = compareCommand(Command.GET_RATES);
+const isCommandGetRates = compareCommand(Command.GET_RATES);
+const isCommandSettings = compareCommand(Command.SETTINGS);
 
-export const isSettings = compareCommand(Command.SETTINGS);
+const CompareButton = (button: Button) => (text?: string) => text === button;
+
+const isButtonGetRates = CompareButton(Button.GET_RATES);
+
+const isButtonSettings = CompareButton(Button.SETTINGS);
+
+const isButtonSystemInfo = CompareButton(Button.SYSTEM_INFO);
+
+const isButtonViewLogs = CompareButton(Button.VIEW_LOGS);
+
+export const isRouteGetRates = (text?: string) =>
+  isCommandGetRates(text) || isButtonGetRates(text);
+
+export const isRouteSettings = (text?: string) =>
+  isCommandSettings(text) || isButtonSettings(text);
+
+export const isRouteSystemInfo = (text?: string) => isButtonSystemInfo(text);
+
+export const isRouteViewLogs = (text?: string) => isButtonViewLogs(text);
 
 export const commands: BotCommand[] = [
   { command: Command.GET_RATES, description: 'Get rates' },
@@ -50,14 +69,26 @@ const getReplyKeyboard = (buttons: KeyboardButton[][]): ReplyKeyboardMarkup => {
   };
 };
 
-const getUserButtons = (user: User) => [
+const userButtons = [[getRatesButton, getSettingsButton]];
+
+const adminButtons = [
   [getRatesButton, getSettingsButton],
-  ...(user.isAdmin() ? [[getSystemInfoButton]] : [[]]),
+  [getSystemInfoButton],
 ];
 
-const AdminButtons = [[getSystemInfoButton, getLogsButton]];
+const adminInfoButtons = [[getSystemInfoButton, getLogsButton]];
 
-export const getDefaultReplyKeyboard = (user: User) =>
-  getReplyKeyboard(getUserButtons(user));
+const defaultUserReplyKeyboard = getReplyKeyboard(userButtons);
 
-export const getAdminReplyKeyboard = () => getReplyKeyboard(AdminButtons);
+const defaultAdminReplyKeyboard = getReplyKeyboard(adminButtons);
+
+const adminReplyKeyboard = getReplyKeyboard(adminInfoButtons);
+
+const settingsReplyKeyboard = getReplyKeyboard([[getReplyButton(Button.BACK)]]);
+
+export const keyboards = {
+  adminReplyKeyboard,
+  defaultAdminReplyKeyboard,
+  defaultUserReplyKeyboard,
+  settingsReplyKeyboard,
+};
