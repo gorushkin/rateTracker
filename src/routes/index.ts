@@ -15,7 +15,7 @@ export const addRoutes = async (bot: TelegramBot) => {
       chat: { id, username },
     } = msg;
 
-    const user = db.addUser(id, username);
+    const user = db.addUser(id, username, botController);
 
     logger.addLog(`Received message: ${msg.text}`, user);
 

@@ -10,18 +10,6 @@ class BotController {
     public db: DB,
   ) {}
 
-  sendMessage = (
-    user: User,
-    message: string,
-    keyboard: ReplyKeyboardMarkup,
-  ) => {
-    this.bot.sendMessage(user.id, message, {
-      reply_markup: {
-        ...keyboard,
-      },
-    });
-  };
-
   onGetRates = async (user: User) => {
     logger.addLog('Getting rates', user);
 
@@ -39,7 +27,7 @@ class BotController {
       ? keyboards.defaultAdminReplyKeyboard
       : keyboards.defaultUserReplyKeyboard;
 
-    this.sendMessage(user, message, keyboard);
+    user.sendMessage(message, keyboard);
   };
 
   onSettings = async (user: User) => {
@@ -47,7 +35,7 @@ class BotController {
 
     const message = 'There are some settings for you:';
 
-    this.sendMessage(user, message, keyboards.settingsReplyKeyboard(user));
+    user.sendMessage(message, keyboards.settingsReplyKeyboard(user));
   };
 
   onHourlyUpdatesSettings = async (user: User) => {
@@ -59,7 +47,7 @@ class BotController {
       ? 'Hourly updates are enabled'
       : 'Hourly updates are disabled';
 
-    this.sendMessage(user, message, keyboards.settingsReplyKeyboard(user));
+    user.sendMessage(message, keyboards.settingsReplyKeyboard(user));
   };
 
   onSystemInfo = (user: User) => {
@@ -74,7 +62,7 @@ class BotController {
 
     const message = `Current users:\n\n${users}`;
 
-    this.sendMessage(user, message, keyboards.adminReplyKeyboard);
+    user.sendMessage(message, keyboards.adminReplyKeyboard);
   };
 
   onViewLogs = (user: User) => {
@@ -88,7 +76,7 @@ class BotController {
 
     const message = `Logs:\n\n${logsString}`;
 
-    this.sendMessage(user, message, keyboards.adminReplyKeyboard);
+    user.sendMessage(message, keyboards.adminReplyKeyboard);
   };
 
   defaultResponse = (user: User) => {
@@ -98,7 +86,7 @@ class BotController {
       ? keyboards.defaultAdminReplyKeyboard
       : keyboards.defaultUserReplyKeyboard;
 
-    this.sendMessage(user, "I didn't got you!!!", keyboard);
+    user.sendMessage("I didn't got you!!!", keyboard);
   };
 }
 
