@@ -1,5 +1,5 @@
 import TelegramBot, { ReplyKeyboardMarkup } from 'node-telegram-bot-api';
-import { getAdminReplyKeyboard, getDefaultReplyKeyboard } from '../keyboards';
+import { keyboards } from '../keyboards';
 import { getRates } from '../api';
 import { DB, User } from '../entity/database';
 import { logger } from '../entity/log';
@@ -9,18 +9,6 @@ class BotController {
     public bot: TelegramBot,
     public db: DB,
   ) {}
-
-  sendMessage = (
-    user: User,
-    message: string,
-    keyboard: ReplyKeyboardMarkup,
-  ) => {
-    this.bot.sendMessage(user.id, message, {
-      reply_markup: {
-        ...keyboard,
-      },
-    });
-  };
 
   onGetRates = async (user: User) => {
     logger.addLog('Getting rates', user);
@@ -35,15 +23,31 @@ class BotController {
 
     const message = `Rates at ${date}:\n\n${ratesString}`;
 
-    this.sendMessage(user, message, getDefaultReplyKeyboard(user));
+    const keyboard = user.isAdmin()
+      ? keyboards.defaultAdminReplyKeyboard
+      : keyboards.defaultUserReplyKeyboard;
+
+    user.sendMessage(message, keyboard);
   };
 
   onSettings = async (user: User) => {
     logger.addLog('Settings', user);
 
-    const message = "It doesn't work yet";
+    const message = 'There are some settings for you:';
 
-    this.sendMessage(user, message, getDefaultReplyKeyboard(user));
+    user.sendMessage(message, keyboards.settingsReplyKeyboard(user));
+  };
+
+  onHourlyUpdatesSettings = async (user: User) => {
+    logger.addLog('Settings', user);
+
+    const isHourlyUpdateEnabled = user.toggleOnHourlyUpdate();
+
+    const message = isHourlyUpdateEnabled
+      ? 'Hourly updates are enabled'
+      : 'Hourly updates are disabled';
+
+    user.sendMessage(message, keyboards.settingsReplyKeyboard(user));
   };
 
   onSystemInfo = (user: User) => {
@@ -58,7 +62,7 @@ class BotController {
 
     const message = `Current users:\n\n${users}`;
 
-    this.sendMessage(user, message, getAdminReplyKeyboard());
+    user.sendMessage(message, keyboards.adminReplyKeyboard);
   };
 
   onViewLogs = (user: User) => {
@@ -72,17 +76,17 @@ class BotController {
 
     const message = `Logs:\n\n${logsString}`;
 
-    this.sendMessage(user, message, getAdminReplyKeyboard());
+    user.sendMessage(message, keyboards.adminReplyKeyboard);
   };
 
   defaultResponse = (user: User) => {
     logger.addLog('Default response', user);
 
-    this.sendMessage(
-      user,
-      "let's do something!",
-      getDefaultReplyKeyboard(user),
-    );
+    const keyboard = user.isAdmin()
+      ? keyboards.defaultAdminReplyKeyboard
+      : keyboards.defaultUserReplyKeyboard;
+
+    user.sendMessage("I didn't got you!!!", keyboard);
   };
 }
 

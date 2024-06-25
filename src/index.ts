@@ -1,9 +1,11 @@
 import {  addRoutes } from './routes';
 import { config } from './config';
+import cron from 'node-cron';
 
 const { TELEGRAM_API } = config;
 
 import TelegramBot from 'node-telegram-bot-api';
+import { db } from './entity/database';
 
 const init = async () => {
   try {
@@ -15,5 +17,15 @@ const init = async () => {
     console.error(error);
   }
 };
+
+cron.schedule('0 1-23 * * *', () => {
+  const users = db.getUsers();
+
+  users.forEach((user) => {
+    if (user.isHourlyUpdateEnabled) {
+      user.sendRates();
+    }
+  });
+});
 
 init();

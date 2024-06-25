@@ -1,13 +1,9 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { BotController } from '../controllers';
-import {
-  Button,
-  Command,
-  commands,
-  isGetRates,
-} from '../keyboards';
+import { commands } from '../keyboards';
 import { db } from '../entity/database';
 import { logger } from '../entity/log';
+import { checkRoute } from './libs';
 
 export const addRoutes = async (bot: TelegramBot) => {
   const botController = new BotController(bot, db);
@@ -19,26 +15,34 @@ export const addRoutes = async (bot: TelegramBot) => {
       chat: { id, username },
     } = msg;
 
-    const user = db.addUser(id, username);
+    const user = db.addUser(id, username, botController);
 
     logger.addLog(`Received message: ${msg.text}`, user);
 
-    if (msg.text === Button.GET_RATES || isGetRates(msg.text)) {
+    if (checkRoute.isRouteGetRates(msg.text)) {
       return botController.onGetRates(user);
     }
 
-    if (msg.text === Button.SETTINGS || isGetRates(msg.text)) {
+    if (checkRoute.isRouteMainScreen(msg.text)) {
+      return botController.onGetRates(user);
+    }
+
+    if (checkRoute.isRouteSettings(msg.text)) {
       return botController.onSettings(user);
     }
 
-    if (msg.text === Button.SYSTEM_INFO) {
+    if (checkRoute.isRouteHourlyUpdatesSettings(msg.text)) {
+      return botController.onHourlyUpdatesSettings(user);
+    }
+
+    if (checkRoute.isRouteSystemInfo(msg.text)) {
       if (!user.isAdmin()) {
         throw new Error('User is not an admin');
       }
       return botController.onSystemInfo(user);
     }
 
-    if (msg.text === Button.VIEW_LOGS) {
+    if (checkRoute.isRouteViewLogs(msg.text)) {
       if (!user.isAdmin()) {
         throw new Error('User is not an admin');
       }

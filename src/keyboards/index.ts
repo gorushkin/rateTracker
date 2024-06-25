@@ -10,20 +10,16 @@ export enum Button {
   SETTINGS = 'Settings',
   SYSTEM_INFO = 'System info',
   VIEW_LOGS = 'View logs',
-  BACK = 'BACK',
+  MAIN_SCREEN = 'Main screen',
+  REMINDER = 'REMINDER',
+  TURN_ON_HOURLY_UPDATES = 'Turn on hourly updates',
+  TURN_OFF_HOURLY_UPDATES = 'Turn off hourly updates',
 }
 
 export enum Command {
   GET_RATES = 'get_rates',
   SETTINGS = 'settings',
 }
-
-const compareCommand = (command: Command) => (text?: string) =>
-  text === `/${command}`;
-
-export const isGetRates = compareCommand(Command.GET_RATES);
-
-export const isSettings = compareCommand(Command.SETTINGS);
 
 export const commands: BotCommand[] = [
   { command: Command.GET_RATES, description: 'Get rates' },
@@ -35,12 +31,14 @@ const getReplyButton = (buttontext: Button): KeyboardButton => ({
 });
 
 const getRatesButton = getReplyButton(Button.GET_RATES);
-
 const getSettingsButton = getReplyButton(Button.SETTINGS);
-
 const getSystemInfoButton = getReplyButton(Button.SYSTEM_INFO);
-
 const getLogsButton = getReplyButton(Button.VIEW_LOGS);
+const mainScreenButton = getReplyButton(Button.MAIN_SCREEN);
+const turnOnHourlyUpdateButton = getReplyButton(Button.TURN_ON_HOURLY_UPDATES);
+const turnOffHourlyUpdateButton = getReplyButton(
+  Button.TURN_OFF_HOURLY_UPDATES,
+);
 
 const getReplyKeyboard = (buttons: KeyboardButton[][]): ReplyKeyboardMarkup => {
   return {
@@ -50,14 +48,39 @@ const getReplyKeyboard = (buttons: KeyboardButton[][]): ReplyKeyboardMarkup => {
   };
 };
 
-const getUserButtons = (user: User) => [
+const userButtons = [[getRatesButton, getSettingsButton]];
+
+const adminButtons = [
   [getRatesButton, getSettingsButton],
-  ...(user.isAdmin() ? [[getSystemInfoButton]] : [[]]),
+  [getSystemInfoButton],
 ];
 
-const AdminButtons = [[getSystemInfoButton, getLogsButton]];
+const adminInfoButtons = [
+  [getSystemInfoButton, getLogsButton],
+  [mainScreenButton],
+];
 
-export const getDefaultReplyKeyboard = (user: User) =>
-  getReplyKeyboard(getUserButtons(user));
+const defaultUserReplyKeyboard = getReplyKeyboard(userButtons);
 
-export const getAdminReplyKeyboard = () => getReplyKeyboard(AdminButtons);
+const defaultAdminReplyKeyboard = getReplyKeyboard(adminButtons);
+
+const adminReplyKeyboard = getReplyKeyboard(adminInfoButtons);
+
+const settingsReplyKeyboard = (user: User) =>
+  getReplyKeyboard([
+    [
+      ...[
+        user.isHourlyUpdateEnabled
+          ? turnOffHourlyUpdateButton
+          : turnOnHourlyUpdateButton,
+      ],
+    ],
+    [mainScreenButton],
+  ]);
+
+export const keyboards = {
+  adminReplyKeyboard,
+  defaultAdminReplyKeyboard,
+  defaultUserReplyKeyboard,
+  settingsReplyKeyboard,
+};
