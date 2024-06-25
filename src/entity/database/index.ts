@@ -1,7 +1,7 @@
 export type Role = 'admin' | 'user';
 
 export class User {
-  autoSendRates: boolean = false;
+  isHourlyUpdateEnabled: boolean = false;
 
   constructor(
     public id: number,
@@ -9,16 +9,9 @@ export class User {
     public role: Role = 'user',
   ) {}
 
-  private setAutoSendRates = (autoSendRates: boolean) => {
-    this.autoSendRates = autoSendRates;
-  };
-
-  turnOnAutoSendRates = () => {
-    this.setAutoSendRates(true);
-  };
-
-  turnOffAutoSendRates = () => {
-    this.setAutoSendRates(false);
+  toggleOnHourlyUpdate = () => {
+    this.isHourlyUpdateEnabled = !this.isHourlyUpdateEnabled;
+    return this.isHourlyUpdateEnabled;
   };
 
   isAdmin = () => {

@@ -45,9 +45,21 @@ class BotController {
   onSettings = async (user: User) => {
     logger.addLog('Settings', user);
 
-    const message = "It doesn't work yet";
+    const message = 'There are some settings for you:';
 
-    this.sendMessage(user, message, keyboards.settingsReplyKeyboard);
+    this.sendMessage(user, message, keyboards.settingsReplyKeyboard(user));
+  };
+
+  onHourlyUpdatesSettings = async (user: User) => {
+    logger.addLog('Settings', user);
+
+    const isHourlyUpdateEnabled = user.toggleOnHourlyUpdate();
+
+    const message = isHourlyUpdateEnabled
+      ? 'Hourly updates are enabled'
+      : 'Hourly updates are disabled';
+
+    this.sendMessage(user, message, keyboards.settingsReplyKeyboard(user));
   };
 
   onSystemInfo = (user: User) => {
