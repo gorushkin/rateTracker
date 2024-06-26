@@ -5,6 +5,7 @@ enum Currency {
   USD = 'USD',
   NZD = 'NZD',
   TRY = 'TRY',
+  CNY = 'CNY',
   RUB = 'RUB',
 }
 
@@ -22,7 +23,13 @@ export const getCurrencyRate = async (currency: Currency): Promise<string> => {
   }
 };
 
-const currencies = [Currency.EUR, Currency.USD, Currency.NZD, Currency.TRY];
+const currencies = [
+  Currency.USD,
+  Currency.EUR,
+  Currency.CNY,
+  Currency.NZD,
+  Currency.TRY,
+];
 
 export const getRates = async () => {
   const promises = currencies.map(async (currency) => {
