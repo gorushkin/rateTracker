@@ -5,6 +5,7 @@ export type Role = 'admin' | 'user';
 
 export class User {
   isHourlyUpdateEnabled: boolean = false;
+  isDailyUpdateEnabled: boolean = false;
 
   constructor(
     public id: number,
@@ -16,6 +17,11 @@ export class User {
   toggleOnHourlyUpdate = () => {
     this.isHourlyUpdateEnabled = !this.isHourlyUpdateEnabled;
     return this.isHourlyUpdateEnabled;
+  };
+
+  toggleOnDailyUpdate = () => {
+    this.isDailyUpdateEnabled = !this.isDailyUpdateEnabled;
+    return this.isDailyUpdateEnabled;
   };
 
   isAdmin = () => {

@@ -13,6 +13,8 @@ export enum Button {
   MAIN_SCREEN = 'Main screen',
   REMINDER = 'REMINDER',
   TURN_ON_HOURLY_UPDATES = 'Turn on hourly updates',
+  TURN_ON_DAILY_UPDATES = 'Turn on daily updates',
+  TURN_OFF_DAILY_UPDATES = 'Turn on daily updates',
   TURN_OFF_HOURLY_UPDATES = 'Turn off hourly updates',
 }
 
@@ -40,6 +42,9 @@ const turnOffHourlyUpdateButton = getReplyButton(
   Button.TURN_OFF_HOURLY_UPDATES,
 );
 
+const turnOnDailyUpdateButton = getReplyButton(Button.TURN_ON_DAILY_UPDATES);
+const turnOffDailyUpdateButton = getReplyButton(Button.TURN_OFF_DAILY_UPDATES);
+
 const getReplyKeyboard = (buttons: KeyboardButton[][]): ReplyKeyboardMarkup => {
   return {
     keyboard: buttons,
@@ -66,17 +71,13 @@ const defaultAdminReplyKeyboard = getReplyKeyboard(adminButtons);
 
 const adminReplyKeyboard = getReplyKeyboard(adminInfoButtons);
 
-const settingsReplyKeyboard = (user: User) =>
-  getReplyKeyboard([
-    [
-      ...[
-        user.isHourlyUpdateEnabled
-          ? turnOffHourlyUpdateButton
-          : turnOnHourlyUpdateButton,
-      ],
-    ],
-    [mainScreenButton],
-  ]);
+const settingsReplyKeyboard = (user: User) => {
+  const hourlyUpdateButton = user.isHourlyUpdateEnabled
+    ? turnOffHourlyUpdateButton
+    : turnOnHourlyUpdateButton;
+
+  return getReplyKeyboard([[...[hourlyUpdateButton]], [mainScreenButton]]);
+};
 
 export const keyboards = {
   adminReplyKeyboard,
