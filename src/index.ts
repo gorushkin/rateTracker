@@ -4,6 +4,10 @@ import cron from 'node-cron';
 
 const { TELEGRAM_API } = config;
 
+if (!TELEGRAM_API) {
+  throw new Error('TELEGRAM_API is not set');
+}
+
 import TelegramBot from 'node-telegram-bot-api';
 import { db } from './entity/database';
 

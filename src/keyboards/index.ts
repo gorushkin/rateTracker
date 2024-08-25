@@ -14,8 +14,9 @@ export enum Button {
   REMINDER = 'REMINDER',
   TURN_ON_HOURLY_UPDATES = 'Turn on hourly updates',
   TURN_ON_DAILY_UPDATES = 'Turn on daily updates',
-  TURN_OFF_DAILY_UPDATES = 'Turn on daily updates',
+  TURN_OFF_DAILY_UPDATES = 'Turn off daily updates',
   TURN_OFF_HOURLY_UPDATES = 'Turn off hourly updates',
+  SETTINGS_INFO = 'Settings info',
 }
 
 export enum Command {
@@ -44,6 +45,8 @@ const turnOffHourlyUpdateButton = getReplyButton(
 
 const turnOnDailyUpdateButton = getReplyButton(Button.TURN_ON_DAILY_UPDATES);
 const turnOffDailyUpdateButton = getReplyButton(Button.TURN_OFF_DAILY_UPDATES);
+
+const getSettingsInfo = getReplyButton(Button.SETTINGS_INFO);
 
 const getReplyKeyboard = (buttons: KeyboardButton[][]): ReplyKeyboardMarkup => {
   return {
@@ -76,7 +79,14 @@ const settingsReplyKeyboard = (user: User) => {
     ? turnOffHourlyUpdateButton
     : turnOnHourlyUpdateButton;
 
-  return getReplyKeyboard([[...[hourlyUpdateButton]], [mainScreenButton]]);
+  const dailyUpdateButton = user.isDailyUpdateEnabled
+    ? turnOffDailyUpdateButton
+    : turnOnDailyUpdateButton;
+
+  return getReplyKeyboard([
+    [...[hourlyUpdateButton, dailyUpdateButton, getSettingsInfo]],
+    [mainScreenButton],
+  ]);
 };
 
 export const keyboards = {
