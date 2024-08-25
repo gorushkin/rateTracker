@@ -35,6 +35,14 @@ export const addRoutes = async (bot: TelegramBot) => {
       return botController.onHourlyUpdatesSettings(user);
     }
 
+    if (checkRoute.isRouteDailyUpdatesSettings(msg.text)) {
+      return botController.onDailyUpdatesSettings(user);
+    }
+
+    if (checkRoute.isRouteSettingsInfo(msg.text)) {
+      return botController.onSettingsInfo(user);
+    }
+
     if (checkRoute.isRouteSystemInfo(msg.text)) {
       if (!user.isAdmin()) {
         throw new Error('User is not an admin');
