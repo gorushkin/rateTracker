@@ -45,7 +45,7 @@ class BotController {
 
     const status = isHourlyUpdateEnabled ? 'enabled' : 'disabled';
 
-    const message = `Hourly updates are ${status}}`;
+    const message = `Hourly updates are ${status}`;
 
     user.sendMessage(message, keyboards.settingsReplyKeyboard(user));
   };
@@ -57,7 +57,7 @@ class BotController {
 
     const status = isDailyUpdateEnabled ? 'enabled' : 'disabled';
 
-    const message = `Daily updates are ${status}}`;
+    const message = `Daily updates are ${status}`;
 
     user.sendMessage(message, keyboards.settingsReplyKeyboard(user));
   };

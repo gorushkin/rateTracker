@@ -84,7 +84,9 @@ const settingsReplyKeyboard = (user: User) => {
     : turnOnDailyUpdateButton;
 
   return getReplyKeyboard([
-    [...[hourlyUpdateButton, dailyUpdateButton, getSettingsInfo]],
+    [hourlyUpdateButton],
+    [dailyUpdateButton],
+    [getSettingsInfo],
     [mainScreenButton],
   ]);
 };
