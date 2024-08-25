@@ -39,13 +39,38 @@ class BotController {
   };
 
   onHourlyUpdatesSettings = async (user: User) => {
-    logger.addLog('Settings', user);
+    logger.addLog('HourlyUpdatesSettings', user);
 
     const isHourlyUpdateEnabled = user.toggleOnHourlyUpdate();
 
-    const message = isHourlyUpdateEnabled
-      ? 'Hourly updates are enabled'
-      : 'Hourly updates are disabled';
+    const status = isHourlyUpdateEnabled ? 'enabled' : 'disabled';
+
+    const message = `Hourly updates are ${status}}`;
+
+    user.sendMessage(message, keyboards.settingsReplyKeyboard(user));
+  };
+
+  onDailyUpdatesSettings = async (user: User) => {
+    logger.addLog('DailyUpdatesSettings', user);
+
+    const isDailyUpdateEnabled = user.toggleOnDailyUpdate();
+
+    const status = isDailyUpdateEnabled ? 'enabled' : 'disabled';
+
+    const message = `Daily updates are ${status}}`;
+
+    user.sendMessage(message, keyboards.settingsReplyKeyboard(user));
+  };
+
+  onSettingsInfo = async (user: User) => {
+    const id = user.id;
+    const username = user.username;
+    const isHourlyUpdateEnabled = user.isHourlyUpdateEnabled;
+    const isDailyUpdateEnabled = user.isDailyUpdateEnabled;
+
+    const message =
+      'User settings:\n\n' +
+      `Username: ${username}\nID: ${id}\nHourly updates: ${isHourlyUpdateEnabled}\nDaily updates: ${isDailyUpdateEnabled}`;
 
     user.sendMessage(message, keyboards.settingsReplyKeyboard(user));
   };

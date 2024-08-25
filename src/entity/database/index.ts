@@ -1,10 +1,16 @@
-import TelegramBot, { ReplyKeyboardMarkup } from 'node-telegram-bot-api';
+import { ReplyKeyboardMarkup } from 'node-telegram-bot-api';
 import { BotController } from '../../controllers';
+import { Dayjs } from 'dayjs';
+import { compareTime } from '../../scheduler/utils';
 
 export type Role = 'admin' | 'user';
 
+const DAILY_UPDATE_TIME = '15:50';
+
 export class User {
   isHourlyUpdateEnabled: boolean = false;
+  isDailyUpdateEnabled: boolean = true;
+  private dailyUpdateTime: string = DAILY_UPDATE_TIME;
 
   constructor(
     public id: number,
@@ -13,9 +19,31 @@ export class User {
     public role: Role = 'user',
   ) {}
 
+  private shouldUserBeUpdated = (time: Dayjs) => {
+    const isReadyForDailyUpdate = this.checkIsReadyForDailyUpdate(time);
+    const isReadyForHourlyUpdate = this.checkIsReadyForHourlyUpdate();
+
+    return isReadyForDailyUpdate || isReadyForHourlyUpdate;
+  };
+
+  private checkIsReadyForDailyUpdate = (time: Dayjs) => {
+    const isUserReadyForDailyUpdate = compareTime(this.dailyUpdateTime, time);
+
+    return isUserReadyForDailyUpdate;
+  };
+
+  private checkIsReadyForHourlyUpdate = () => {
+    return this.isHourlyUpdateEnabled;
+  };
+
   toggleOnHourlyUpdate = () => {
     this.isHourlyUpdateEnabled = !this.isHourlyUpdateEnabled;
     return this.isHourlyUpdateEnabled;
+  };
+
+  toggleOnDailyUpdate = () => {
+    this.isDailyUpdateEnabled = !this.isDailyUpdateEnabled;
+    return this.isDailyUpdateEnabled;
   };
 
   isAdmin = () => {
@@ -32,6 +60,14 @@ export class User {
 
   sendRates = () => {
     this.botController.onGetRates(this);
+  };
+
+  updateUserRates = (time: Dayjs) => {
+    const shouldUserBeUpdated = this.shouldUserBeUpdated(time);
+
+    if (shouldUserBeUpdated) {
+      this.sendRates();
+    }
   };
 }
 
