@@ -34,6 +34,7 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/${{ vars.APP_NAME }}:${{ github.sha }}
 
   deploy:
+    needs: update-container
     runs-on: ubuntu-latest
 
     steps:
