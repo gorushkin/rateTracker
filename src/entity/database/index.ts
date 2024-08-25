@@ -5,11 +5,11 @@ import { compareTime } from '../../scheduler/utils';
 
 export type Role = 'admin' | 'user';
 
-const DAILY_UPDATE_TIME = '15:50';
+const DAILY_UPDATE_TIME = '06:00';
 
 export class User {
   isHourlyUpdateEnabled: boolean = false;
-  isDailyUpdateEnabled: boolean = true;
+  isDailyUpdateEnabled: boolean = false;
   private dailyUpdateTime: string = DAILY_UPDATE_TIME;
 
   constructor(
