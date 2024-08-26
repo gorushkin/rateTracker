@@ -3,7 +3,7 @@ import {
   type ReplyKeyboardMarkup,
   type BotCommand,
 } from 'node-telegram-bot-api';
-import { User } from '../entity/database';
+import { User } from '../entity/user';
 
 export enum Button {
   GET_RATES = 'Get rates',

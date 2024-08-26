@@ -1,8 +1,9 @@
 import TelegramBot, { ReplyKeyboardMarkup } from 'node-telegram-bot-api';
 import { keyboards } from '../keyboards';
 import { getRates } from '../api';
-import { DB, User } from '../entity/database';
-import { logger } from '../entity/log';
+import { DB } from '../entity/database';
+import { logger } from '../utils';
+import { User } from '../entity/user';
 
 class BotController {
   constructor(

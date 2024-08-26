@@ -1,4 +1,4 @@
-import { User } from '../database';
+import { User } from '../entity/user';
 
 class LogLine {
   constructor(

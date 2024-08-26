@@ -2,7 +2,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import { BotController } from '../controllers';
 import { commands } from '../keyboards';
 import { db } from '../entity/database';
-import { logger } from '../entity/log';
+import { logger } from '../utils';
 import { checkRoute } from './libs';
 
 export const addRoutes = async (bot: TelegramBot) => {
