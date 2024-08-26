@@ -1,72 +1,99 @@
-import { ReplyKeyboardMarkup } from 'node-telegram-bot-api';
-import { Dayjs } from 'dayjs';
-import { BotController } from '../controllers';
+import { userDB, UserDB } from '../database/database';
+import { PrismaClient, User as UserDTO } from '@prisma/client';
+import TelegramBot, { ReplyKeyboardMarkup } from 'node-telegram-bot-api';
 import { compareTime } from '../scheduler/utils';
-
-export type Role = 'admin' | 'user';
+import { Dayjs } from 'dayjs';
 
 const DAILY_UPDATE_TIME = '06:00';
 
-export class User {
-  isHourlyUpdateEnabled: boolean = false;
-  isDailyUpdateEnabled: boolean = false;
-  private dailyUpdateTime: string = DAILY_UPDATE_TIME;
+export class User implements UserDTO {
+  id: bigint;
+  username: string | null;
+  role: string | null;
+  isHourlyUpdateEnabled: boolean;
+  isDailyUpdateEnabled: boolean;
+  users: UserDB;
 
-  constructor(
-    public id: number,
-    public botController: BotController,
-    public username: string,
-    public role: Role = 'user',
-  ) {}
+  constructor(data: UserDTO, users: UserDB) {
+    this.id = data.id;
+    this.username = data.username;
+    this.role = data.role;
+    this.isHourlyUpdateEnabled = data.isHourlyUpdateEnabled;
+    this.isDailyUpdateEnabled = data.isDailyUpdateEnabled;
+    this.users = users;
+  }
 
-  private shouldUserBeUpdated = (time: Dayjs) => {
-    const isReadyForDailyUpdate = this.checkIsReadyForDailyUpdate(time);
-    const isReadyForHourlyUpdate = this.checkIsReadyForHourlyUpdate();
-
-    return isReadyForDailyUpdate || isReadyForHourlyUpdate;
-  };
+  get isAdmin(): boolean {
+    return this.role === 'admin';
+  }
 
   private checkIsReadyForDailyUpdate = (time: Dayjs) => {
-    const isUserReadyForDailyUpdate = compareTime(this.dailyUpdateTime, time);
-
-    return isUserReadyForDailyUpdate;
+    return compareTime(DAILY_UPDATE_TIME, time);
   };
 
   private checkIsReadyForHourlyUpdate = () => {
     return this.isHourlyUpdateEnabled;
   };
 
-  toggleOnHourlyUpdate = () => {
-    this.isHourlyUpdateEnabled = !this.isHourlyUpdateEnabled;
-    return this.isHourlyUpdateEnabled;
+  shouldUserBeUpdated = (time: Dayjs) => {
+    const isReadyForDailyUpdate = this.checkIsReadyForDailyUpdate(time);
+    const isReadyForHourlyUpdate = this.checkIsReadyForHourlyUpdate();
+
+    return isReadyForDailyUpdate || isReadyForHourlyUpdate;
   };
 
-  toggleOnDailyUpdate = () => {
-    this.isDailyUpdateEnabled = !this.isDailyUpdateEnabled;
-    return this.isDailyUpdateEnabled;
-  };
-
-  isAdmin = () => {
-    return this.role === 'admin';
-  };
-
-  sendMessage = (message: string, keyboard: ReplyKeyboardMarkup) => {
-    this.botController.bot.sendMessage(this.id, message, {
-      reply_markup: {
-        ...keyboard,
-      },
+  toggleHourlyUpdates = async () => {
+    const updatedUser = await this.users.updateUser(Number(this.id), {
+      isHourlyUpdateEnabled: !this.isHourlyUpdateEnabled,
     });
+
+    this.isHourlyUpdateEnabled = !this.isHourlyUpdateEnabled;
+
+    return updatedUser;
   };
 
-  sendRates = () => {
-    this.botController.onGetRates(this);
-  };
+  toggleDailyUpdate = async () => {
+    const updatedUser = await this.users.updateUser(Number(this.id), {
+      isDailyUpdateEnabled: !this.isDailyUpdateEnabled,
+    });
 
-  updateUserRates = (time: Dayjs) => {
-    const shouldUserBeUpdated = this.shouldUserBeUpdated(time);
+    this.isDailyUpdateEnabled = !this.isDailyUpdateEnabled;
 
-    if (shouldUserBeUpdated) {
-      this.sendRates();
-    }
+    return updatedUser;
   };
 }
+
+export class UserService {
+  users: UserDB;
+
+  constructor(users: UserDB) {
+    this.users = users;
+  }
+
+  addUser = async (id: number, username: string = ''): Promise<User> => {
+    const user = await this.users.addUser(id, username);
+    return new User(user, this.users);
+  };
+
+  getUser = async (id: number): Promise<User | null> => {
+    const user = await this.users.getUser(id);
+
+    if (!user) {
+      return null;
+    }
+
+    return new User(user, this.users);
+  };
+
+  getUsers = async (): Promise<User[]> => {
+    const users = await this.users.getUsers();
+    return users.map((user) => new User(user, this.users));
+  };
+
+  updateUser = async (id: number, data: Partial<User>) => {
+    const user = await this.users.updateUser(id, data);
+    return new User(user, this.users);
+  };
+}
+
+export const userService = new UserService(userDB);

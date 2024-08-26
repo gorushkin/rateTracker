@@ -1,4 +1,3 @@
-import { addRoutes } from './routes';
 import { config } from './config';
 
 const { TELEGRAM_API } = config;
@@ -7,19 +6,15 @@ if (!TELEGRAM_API) {
   throw new Error('TELEGRAM_API is not set');
 }
 
-import TelegramBot from 'node-telegram-bot-api';
 import { scheduler } from './scheduler';
+import { initBot } from './bot';
+import { initDB } from './databaseConnection';
 
 const init = async () => {
-  try {
-    const bot = new TelegramBot(TELEGRAM_API, { polling: true });
+  const botController = await initBot(TELEGRAM_API);
+  await initDB();
 
-    addRoutes(bot);
-  } catch (error) {
-    console.error(error);
-  }
-
-  scheduler();
+  scheduler(botController);
 };
 
 init();

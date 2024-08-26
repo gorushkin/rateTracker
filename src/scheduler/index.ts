@@ -1,6 +1,8 @@
 import cron from 'node-cron';
-import { db } from '../entity/database';
 import dayjs from 'dayjs';
+import { userService } from '../entity/user';
+import TelegramBot from 'node-telegram-bot-api';
+import { BotController } from '../controllers';
 
 enum INTERVALS {
   HOUR = '0 * * * *',
@@ -8,15 +10,23 @@ enum INTERVALS {
   MINUTE = '* * * * *',
 }
 
-export const scheduler = () => {
-  cron.schedule(INTERVALS.HOUR, () => {
-    const users = db.getUsers();
+export const scheduler = async (botController?: BotController) => {
+  if (!botController) {
+    throw new Error('Bot is not initialized');
+  }
+
+  cron.schedule(INTERVALS.HOUR, async () => {
+    const users = await userService.getUsers();
 
     const currentTime = dayjs();
 
-    const promises = users.map(({ updateUserRates }) =>
-      updateUserRates(currentTime),
-    );
+    const promises = users.map((user) => {
+      const shouldUserBeUpdated = user.shouldUserBeUpdated(currentTime);
+
+      if (shouldUserBeUpdated) {
+        botController.onGetRates(user);
+      }
+    });
 
     try {
       Promise.all(promises);
