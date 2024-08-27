@@ -12,15 +12,14 @@ export class User implements UserDTO {
   role: string | null;
   isHourlyUpdateEnabled: boolean;
   isDailyUpdateEnabled: boolean;
-  users: UserDB;
+  users: UserDB = userDB;
 
-  constructor(data: UserDTO, users: UserDB) {
+  constructor(data: UserDTO) {
     this.id = data.id;
     this.username = data.username;
     this.role = data.role;
     this.isHourlyUpdateEnabled = data.isHourlyUpdateEnabled;
     this.isDailyUpdateEnabled = data.isDailyUpdateEnabled;
-    this.users = users;
   }
 
   get isAdmin(): boolean {
@@ -62,38 +61,3 @@ export class User implements UserDTO {
     return updatedUser;
   };
 }
-
-export class UserService {
-  users: UserDB;
-
-  constructor(users: UserDB) {
-    this.users = users;
-  }
-
-  addUser = async (id: number, username: string = ''): Promise<User> => {
-    const user = await this.users.addUser(id, username);
-    return new User(user, this.users);
-  };
-
-  getUser = async (id: number): Promise<User | null> => {
-    const user = await this.users.getUser(id);
-
-    if (!user) {
-      return null;
-    }
-
-    return new User(user, this.users);
-  };
-
-  getUsers = async (): Promise<User[]> => {
-    const users = await this.users.getUsers();
-    return users.map((user) => new User(user, this.users));
-  };
-
-  updateUser = async (id: number, data: Partial<User>) => {
-    const user = await this.users.updateUser(id, data);
-    return new User(user, this.users);
-  };
-}
-
-export const userService = new UserService(userDB);

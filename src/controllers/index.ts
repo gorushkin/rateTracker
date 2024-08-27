@@ -1,18 +1,29 @@
 import TelegramBot, { ReplyKeyboardMarkup } from 'node-telegram-bot-api';
 import { keyboards } from '../keyboards';
-import { User, UserService } from '../entity/user';
-import { userDB } from '../database/database';
+import { User } from '../services/user';
 import { logger } from '../utils';
 import { getRates } from '../api';
+import { UserService, userService } from '../services/users';
 
 class BotController {
-  userService: UserService;
+  userService: UserService = userService;
   bot: TelegramBot;
 
   constructor(bot: TelegramBot) {
-    this.userService = new UserService(userDB);
     this.bot = bot;
   }
+
+  private reply = async (
+    user: User,
+    message: string,
+    keyboard: TelegramBot.ReplyKeyboardMarkup,
+  ) => {
+    this.bot.sendMessage(Number(user.id), message, {
+      reply_markup: {
+        ...keyboard,
+      },
+    });
+  };
 
   onGetRates = async (user: User) => {
     logger.addLog('Getting rates', user);
@@ -31,11 +42,7 @@ class BotController {
       ? keyboards.defaultAdminReplyKeyboard
       : keyboards.defaultUserReplyKeyboard;
 
-    this.bot.sendMessage(Number(user.id), message, {
-      reply_markup: {
-        ...keyboard,
-      },
-    });
+    this.reply(user, message, keyboard);
   };
 
   onSettings = async (user: User) => {
@@ -43,11 +50,7 @@ class BotController {
 
     const message = 'There are some settings for you:';
 
-    this.bot.sendMessage(Number(user.id), message, {
-      reply_markup: {
-        ...keyboards.settingsReplyKeyboard(user),
-      },
-    });
+    this.reply(user, message, keyboards.settingsReplyKeyboard(user));
   };
 
   onHourlyUpdatesSettings = async (user: User) => {
@@ -59,11 +62,7 @@ class BotController {
 
     const message = `Hourly updates are ${status}`;
 
-    this.bot.sendMessage(Number(user.id), message, {
-      reply_markup: {
-        ...keyboards.settingsReplyKeyboard(user),
-      },
-    });
+    this.reply(user, message, keyboards.settingsReplyKeyboard(user));
   };
 
   onDailyUpdatesSettings = async (user: User) => {
@@ -75,11 +74,7 @@ class BotController {
 
     const message = `Daily updates are ${status}`;
 
-    this.bot.sendMessage(Number(user.id), message, {
-      reply_markup: {
-        ...keyboards.settingsReplyKeyboard(user),
-      },
-    });
+    this.reply(user, message, keyboards.settingsReplyKeyboard(user));
   };
 
   onSettingsInfo = async (user: User) => {
@@ -92,11 +87,7 @@ class BotController {
       'User settings:\n\n' +
       `Username: ${username}\nID: ${id}\nHourly updates: ${isHourlyUpdateEnabled}\nDaily updates: ${isDailyUpdateEnabled}`;
 
-    this.bot.sendMessage(Number(user.id), message, {
-      reply_markup: {
-        ...keyboards.settingsReplyKeyboard(user),
-      },
-    });
+    this.reply(user, message, keyboards.settingsReplyKeyboard(user));
   };
 
   onSystemInfo = async (user: User) => {
@@ -112,11 +103,7 @@ class BotController {
 
     const message = `Current users:\n\n${usersInfo}`;
 
-    this.bot.sendMessage(Number(user.id), message, {
-      reply_markup: {
-        ...keyboards.adminReplyKeyboard,
-      },
-    });
+    this.reply(user, message, keyboards.adminReplyKeyboard);
   };
 
   onViewLogs = (user: User) => {
@@ -130,11 +117,7 @@ class BotController {
 
     const message = `Logs:\n\n${logsString}`;
 
-    this.bot.sendMessage(Number(user.id), message, {
-      reply_markup: {
-        ...keyboards.adminReplyKeyboard,
-      },
-    });
+    this.reply(user, message, keyboards.adminReplyKeyboard);
   };
 
   defaultResponse = (user: User) => {
@@ -144,11 +127,9 @@ class BotController {
       ? keyboards.defaultAdminReplyKeyboard
       : keyboards.defaultUserReplyKeyboard;
 
-    this.bot.sendMessage(Number(user.id), "I didn't got you!!!", {
-      reply_markup: {
-        ...keyboard,
-      },
-    });
+    const message = "I didn't got you!!!";
+
+    this.reply(user, message, keyboard);
   };
 }
 

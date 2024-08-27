@@ -1,8 +1,8 @@
 import cron from 'node-cron';
 import dayjs from 'dayjs';
-import { userService } from '../entity/user';
 import TelegramBot from 'node-telegram-bot-api';
 import { BotController } from '../controllers';
+import { userService } from '../services/users';
 
 enum INTERVALS {
   HOUR = '0 * * * *',

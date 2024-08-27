@@ -3,8 +3,7 @@ import { BotController } from '../controllers';
 import { commands } from '../keyboards';
 import { logger } from '../utils';
 import { checkRoute } from './libs';
-import { userService, UserService } from '../entity/user';
-import { userDB } from '../database/database';
+import { userService } from '../services/users';
 
 export const addRoutes = async (bot: TelegramBot) => {
   const botController = new BotController(bot);
