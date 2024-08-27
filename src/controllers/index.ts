@@ -1,14 +1,29 @@
 import TelegramBot, { ReplyKeyboardMarkup } from 'node-telegram-bot-api';
 import { keyboards } from '../keyboards';
+import { User } from '../services/user';
+import { logger } from '../utils';
 import { getRates } from '../api';
-import { DB, User } from '../entity/database';
-import { logger } from '../entity/log';
+import { UserService, userService } from '../services/users';
 
 class BotController {
-  constructor(
-    public bot: TelegramBot,
-    public db: DB,
-  ) {}
+  userService: UserService = userService;
+  bot: TelegramBot;
+
+  constructor(bot: TelegramBot) {
+    this.bot = bot;
+  }
+
+  private reply = async (
+    user: User,
+    message: string,
+    keyboard: TelegramBot.ReplyKeyboardMarkup,
+  ) => {
+    this.bot.sendMessage(Number(user.id), message, {
+      reply_markup: {
+        ...keyboard,
+      },
+    });
+  };
 
   onGetRates = async (user: User) => {
     logger.addLog('Getting rates', user);
@@ -23,11 +38,11 @@ class BotController {
 
     const message = `Rates at ${date}:\n\n${ratesString}`;
 
-    const keyboard = user.isAdmin()
+    const keyboard = user.isAdmin
       ? keyboards.defaultAdminReplyKeyboard
       : keyboards.defaultUserReplyKeyboard;
 
-    user.sendMessage(message, keyboard);
+    this.reply(user, message, keyboard);
   };
 
   onSettings = async (user: User) => {
@@ -35,31 +50,31 @@ class BotController {
 
     const message = 'There are some settings for you:';
 
-    user.sendMessage(message, keyboards.settingsReplyKeyboard(user));
+    this.reply(user, message, keyboards.settingsReplyKeyboard(user));
   };
 
   onHourlyUpdatesSettings = async (user: User) => {
     logger.addLog('HourlyUpdatesSettings', user);
 
-    const isHourlyUpdateEnabled = user.toggleOnHourlyUpdate();
+    const { isHourlyUpdateEnabled } = await user.toggleHourlyUpdates();
 
     const status = isHourlyUpdateEnabled ? 'enabled' : 'disabled';
 
     const message = `Hourly updates are ${status}`;
 
-    user.sendMessage(message, keyboards.settingsReplyKeyboard(user));
+    this.reply(user, message, keyboards.settingsReplyKeyboard(user));
   };
 
   onDailyUpdatesSettings = async (user: User) => {
     logger.addLog('DailyUpdatesSettings', user);
 
-    const isDailyUpdateEnabled = user.toggleOnDailyUpdate();
+    const { isDailyUpdateEnabled } = await user.toggleDailyUpdate();
 
     const status = isDailyUpdateEnabled ? 'enabled' : 'disabled';
 
     const message = `Daily updates are ${status}`;
 
-    user.sendMessage(message, keyboards.settingsReplyKeyboard(user));
+    this.reply(user, message, keyboards.settingsReplyKeyboard(user));
   };
 
   onSettingsInfo = async (user: User) => {
@@ -72,22 +87,23 @@ class BotController {
       'User settings:\n\n' +
       `Username: ${username}\nID: ${id}\nHourly updates: ${isHourlyUpdateEnabled}\nDaily updates: ${isDailyUpdateEnabled}`;
 
-    user.sendMessage(message, keyboards.settingsReplyKeyboard(user));
+    this.reply(user, message, keyboards.settingsReplyKeyboard(user));
   };
 
-  onSystemInfo = (user: User) => {
+  onSystemInfo = async (user: User) => {
     logger.addLog('System info', user);
 
-    const users = this.db
-      .showInfo()
+    const users = await this.userService.getUsers();
+
+    const usersInfo = users
       .map(
         ({ id, username, role }) => `${id}: ${role} ${username ?? 'no name'}`,
       )
       .join('\n');
 
-    const message = `Current users:\n\n${users}`;
+    const message = `Current users:\n\n${usersInfo}`;
 
-    user.sendMessage(message, keyboards.adminReplyKeyboard);
+    this.reply(user, message, keyboards.adminReplyKeyboard);
   };
 
   onViewLogs = (user: User) => {
@@ -101,17 +117,19 @@ class BotController {
 
     const message = `Logs:\n\n${logsString}`;
 
-    user.sendMessage(message, keyboards.adminReplyKeyboard);
+    this.reply(user, message, keyboards.adminReplyKeyboard);
   };
 
   defaultResponse = (user: User) => {
     logger.addLog('Default response', user);
 
-    const keyboard = user.isAdmin()
+    const keyboard = user.isAdmin
       ? keyboards.defaultAdminReplyKeyboard
       : keyboards.defaultUserReplyKeyboard;
 
-    user.sendMessage("I didn't got you!!!", keyboard);
+    const message = "I didn't got you!!!";
+
+    this.reply(user, message, keyboard);
   };
 }
 

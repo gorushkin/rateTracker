@@ -1,9 +1,10 @@
+import { User as UserDTO } from '@prisma/client';
+
 import {
   type KeyboardButton,
   type ReplyKeyboardMarkup,
   type BotCommand,
 } from 'node-telegram-bot-api';
-import { User } from '../entity/database';
 
 export enum Button {
   GET_RATES = 'Get rates',
@@ -74,7 +75,7 @@ const defaultAdminReplyKeyboard = getReplyKeyboard(adminButtons);
 
 const adminReplyKeyboard = getReplyKeyboard(adminInfoButtons);
 
-const settingsReplyKeyboard = (user: User) => {
+const settingsReplyKeyboard = (user: UserDTO) => {
   const hourlyUpdateButton = user.isHourlyUpdateEnabled
     ? turnOffHourlyUpdateButton
     : turnOnHourlyUpdateButton;

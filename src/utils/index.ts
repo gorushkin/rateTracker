@@ -1,11 +1,11 @@
-import { User } from '../database';
+import { PrismaClient, User as UserDTO } from '@prisma/client';
 
 class LogLine {
   constructor(
     public id: number,
     public time: string,
     public message: string,
-    public user: User,
+    public user: UserDTO,
   ) {}
 
   print = () => {
@@ -17,7 +17,7 @@ class Logger {
   logs: LogLine[] = [];
   id: number = 0;
 
-  addLog = (message: string, user: User) => {
+  addLog = (message: string, user: UserDTO) => {
     const time = new Date().toUTCString();
 
     const newLine = new LogLine(this.id++, time, message, user);
