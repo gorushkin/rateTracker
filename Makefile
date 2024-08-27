@@ -8,7 +8,10 @@ stop:
 
 create:
 	docker rm -f ${CONTAINER_NAME} 2>/dev/null || true
-	docker run -d --name ${CONTAINER_NAME} ${IMAGE_NAME}
+	docker run -d \
+		-v $(PWD)/db/dev.db:/app/db/dev.db \
+		--name ${CONTAINER_NAME} \
+		${IMAGE_NAME}
 
 remove:
 	docker rm -f ${CONTAINER_NAME}
