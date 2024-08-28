@@ -7,7 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon -x ts-node -e ts  src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "migration:generate": "npx prisma migrate dev --name init",
+    "migration:apply": "npx prisma generate",
+    "migration:add": "npx prisma migrate dev",
+    "migration:init": "npm run migration:add && npm run migration:apply"
   },
   "author": "",
   "license": "ISC",
