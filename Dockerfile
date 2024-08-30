@@ -8,7 +8,6 @@ RUN npm install
 
 COPY src ./src
 COPY prisma ./prisma
-COPY .env ./.env
 
 RUN npm run db:deploy
 RUN npm run build
