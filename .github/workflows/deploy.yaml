@@ -93,7 +93,8 @@ jobs:
           echo "Checking running containers..."
           ssh $SSH 'docker stop ${{vars.APP_NAME}} && docker rm ${{vars.APP_NAME}} || true'
           echo "Starting container..."
-          ssh $SSH 'cd ${{vars.WORK_DIR}} && docker run --env-file ${{vars.WORK_DIR}}/${{vars.APP_NAME}}/.env \
+          ssh $SSH 'cd ${{vars.WORK_DIR}} && docker run \
             -v ${{vars.WORK_DIR}}/${{vars.APP_NAME}}/:/app/ \
+            -v ${{vars.WORK_DIR}}/${{vars.APP_NAME}}/db/:/app/db/ \
             --pull always -d --name ${{vars.APP_NAME}} \
             ghcr.io/${{ github.repository_owner }}/${{ vars.APP_NAME }}:latest'
