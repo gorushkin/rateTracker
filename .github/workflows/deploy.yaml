@@ -87,9 +87,6 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/${{ vars.APP_NAME }}:latest'
           "
 
-      - name: Pull image from GHCR
-        run: ssh $SSH 'docker pull $IMAGE_NAME'
-
       - name: Deploy to remote server
         run: |
           echo "Deploying to $SSH"
