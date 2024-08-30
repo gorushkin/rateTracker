@@ -25,13 +25,8 @@ push:
 
 init: build create
 
-print_hello:
-	echo "Hello, world!"
 
 reset:
 	rm -rf ./db.sqlite
-
-start:
-	npm run dev
 
 restart: reset start
