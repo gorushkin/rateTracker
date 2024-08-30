@@ -74,20 +74,29 @@ jobs:
           echo "Listing files in ${{vars.WORK_DIR}}/${{vars.APP_NAME}}:"
           ssh $SSH 'ls ${{vars.WORK_DIR}}/${{vars.APP_NAME}} -la'
 
+      - name: Print command
+        run: |
+          echo "Command to run the container:"
+          ssh $SSH "
+            echo 'docker run \
+            --env-file ${{vars.WORK_DIR}}/${{vars.APP_NAME}}/.env \
+            -v ${{vars.WORK_DIR}}/${{vars.APP_NAME}}/:/app/ \
+            --pull always \
+            -d \
+            --name ${{vars.APP_NAME}} \
+            ghcr.io/${{ github.repository_owner }}/${{ vars.APP_NAME }}:latest'
+          "
+
       - name: Pull image from GHCR
-        run: docker pull $IMAGE_NAME
+        run: ssh $SSH 'docker pull $IMAGE_NAME'
 
       - name: Deploy to remote server
         run: |
           echo "Deploying to $SSH"
           echo "Checking running containers..."
-          echo 'docker ps -a'
-          ssh $SSH 'docker stop ${{vars.APP_NAME}} && docker rm ${{vars.APP_NAME}}  || true'
+          ssh $SSH 'docker stop ${{vars.APP_NAME}} && docker rm ${{vars.APP_NAME}} || true'
           echo "Starting container..."
-          echo $IMAGE_NAME
-          echo ${{vars.WORK_DIR}}
-          echo ${{vars.APP_NAME}}
-            ssh $SSH 'cd ${{vars.WORK_DIR}} && docker run --env-file ${{vars.WORK_DIR}}/${{vars.APP_NAME}}/.env \
-            -v ${{vars.WORK_DIR}}/${{vars.APP_NAME}}/:/app \
+          ssh $SSH 'cd ${{vars.WORK_DIR}} && docker run --env-file ${{vars.WORK_DIR}}/${{vars.APP_NAME}}/.env \
+            -v ${{vars.WORK_DIR}}/${{vars.APP_NAME}}/:/app/ \
             --pull always -d --name ${{vars.APP_NAME}} \
             ghcr.io/${{ github.repository_owner }}/${{ vars.APP_NAME }}:latest'
