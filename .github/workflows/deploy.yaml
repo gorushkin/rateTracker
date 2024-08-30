@@ -88,6 +88,6 @@ jobs:
           echo ${{vars.WORK_DIR}}
           echo ${{vars.APP_NAME}}
             ssh $SSH 'cd ${{vars.WORK_DIR}} && docker run --env-file ${{vars.WORK_DIR}}/${{vars.APP_NAME}}/.env \
-            -v ${{vars.WORK_DIR}}/${{vars.APP_NAME}}/:/app/ \
+            -v ${{vars.WORK_DIR}}/${{vars.APP_NAME}}/:/app \
             --pull always -d --name ${{vars.APP_NAME}} \
             ghcr.io/${{ github.repository_owner }}/${{ vars.APP_NAME }}:latest'
