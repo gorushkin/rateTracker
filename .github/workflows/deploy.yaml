@@ -68,6 +68,12 @@ jobs:
           echo "${{vars.WORK_DIR}}/${{vars.APP_NAME}}/.env"
           ssh $SSH 'cd ${{vars.WORK_DIR}} && cat ${{vars.APP_NAME}}/.env'
 
+      - name: Verify folder
+        run: |
+          echo "Checking folder"
+          echo "Listing files in ${{vars.WORK_DIR}}/${{vars.APP_NAME}}:"
+          ssh $SSH 'ls ${{vars.WORK_DIR}}/${{vars.APP_NAME}} -la'
+
       - name: Pull image from GHCR
         run: docker pull $IMAGE_NAME
 
@@ -79,10 +85,6 @@ jobs:
           ssh $SSH 'docker stop ${{vars.APP_NAME}} && docker rm ${{vars.APP_NAME}}  || true'
           echo "Starting container..."
           echo $IMAGE_NAME
-
-          echo "Listing files in ${{vars.WORK_DIR}}/${{vars.APP_NAME}}:"
-          ssh $SSH 'ls -la ${{vars.WORK_DIR}}/${{vars.APP_NAME}}'
-
           echo ${{vars.WORK_DIR}}
           echo ${{vars.APP_NAME}}
             ssh $SSH 'cd ${{vars.WORK_DIR}} && docker run --env-file ${{vars.WORK_DIR}}/${{vars.APP_NAME}}/.env \
