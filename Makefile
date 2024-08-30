@@ -9,7 +9,8 @@ stop:
 create:
 	docker rm -f ${CONTAINER_NAME} 2>/dev/null || true
 	docker run -d \
-		-v $(PWD)/db/dev.db:/app/db/dev.db \
+		-p ${PORT}:${PORT} \
+		-v $(PWD)/db/:/app/db/ \
 		--name ${CONTAINER_NAME} \
 		${IMAGE_NAME}
 
