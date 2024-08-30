@@ -8,8 +8,9 @@ RUN npm install
 
 COPY src ./src
 COPY prisma ./prisma
+COPY .env ./.env
 
-RUN npx prisma migrate deploy
+RUN npm run db:deploy
 RUN npm run build
 
 CMD node dist/index.js

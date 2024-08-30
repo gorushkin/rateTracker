@@ -11,7 +11,9 @@
     "migration:generate": "npx prisma migrate dev --name init",
     "migration:apply": "npx prisma generate",
     "migration:add": "npx prisma migrate dev",
-    "migration:init": "npm run migration:add && npm run migration:apply"
+    "db:deploy": "npx prisma generate deploy",
+    "db:push": "npx prisma db push",
+    "studio": "npx prisma studio"
   },
   "author": "",
   "license": "ISC",
