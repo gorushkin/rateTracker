@@ -97,4 +97,5 @@ jobs:
             -v ${{vars.WORK_DIR}}/${{vars.APP_NAME}}/.env:/app/.env \
             -v ${{vars.WORK_DIR}}/${{vars.APP_NAME}}/db/:/app/db/ \
             --pull always -d --name ${{vars.APP_NAME}} \
+            --network ${{vars.APP_NETWORK}} \
             ghcr.io/${{ github.repository_owner }}/${{ vars.APP_NAME }}:latest'
