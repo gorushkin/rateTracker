@@ -11,7 +11,9 @@ create:
 	docker run -d \
 		-p ${PORT}:${PORT} \
 		-v $(PWD)/db/:/app/db/ \
+		-v $(PWD)/.env/:/app/.env \
 		--name ${CONTAINER_NAME} \
+    --network ${NETWORK_NAME} \
 		${IMAGE_NAME}
 
 remove:
