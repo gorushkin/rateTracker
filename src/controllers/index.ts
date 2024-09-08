@@ -4,6 +4,7 @@ import { User } from '../services/user';
 import { logger } from '../utils';
 import { getRates } from '../api';
 import { UserService, userService } from '../services/users';
+import { ratesService } from '../services/rates';
 
 class BotController {
   userService: UserService = userService;
@@ -28,9 +29,16 @@ class BotController {
   onGetRates = async (user: User) => {
     logger.addLog('Getting rates', user);
 
-    const rates = await getRates();
+    const response = await getRates();
+
+    if (!response.ok) {
+      throw new Error(response.error);
+      // return this.reply(user, response.error, keyboards.defaultUserReplyKeyboard);
+    }
 
     const date = new Date().toUTCString();
+
+    const rates = await ratesService.fetchRates();
 
     const ratesString = rates
       .map(({ currency, rate }) => `${currency}: ${rate}`)

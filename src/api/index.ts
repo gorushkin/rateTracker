@@ -1,43 +1,23 @@
 import axios from 'axios';
 
-enum Currency {
-  EUR = 'EUR',
-  USD = 'USD',
-  NZD = 'NZD',
-  TRY = 'TRY',
-  CNY = 'CNY',
-  RUB = 'RUB',
-}
+type Rates = Record<string, number>;
 
-export type Rates = Record<Currency, string>;
-
-const getApiUrl = (currency: Currency, baseCurrency: Currency = Currency.RUB) =>
-  `https://api.coingate.com/v2/rates/merchant/${currency}/${baseCurrency}`;
-
-export const getCurrencyRate = async (currency: Currency): Promise<string> => {
-  try {
-    const { data } = await axios(getApiUrl(currency));
-    return data;
-  } catch (error) {
-    console.error('error: ', error);
-    return 'null';
-  }
+type RatesInfo = {
+  rates: Rates;
+  base: string;
 };
 
-const currencies = [
-  Currency.USD,
-  Currency.EUR,
-  Currency.CNY,
-  Currency.NZD,
-  Currency.TRY,
-];
+const url = 'http://46.19.64.117/currency-rates/oer';
 
-export const getRates = async () => {
-  const promises = currencies.map(async (currency) => {
-    const rate = await getCurrencyRate(currency);
+export type Response<T> = { ok: true; data: T } | { ok: false; error: string };
 
-    return { rate, currency };
-  });
+export const getRates = async (): Promise<Response<Rates>> => {
+  try {
+    const response = await axios.get<RatesInfo>(url);
 
-  return await Promise.all(promises);
+    return { ok: true, data: response.data.rates };
+  } catch (error) {
+    console.error('Error fetching rates', error);
+    return { ok: false, error: 'Something went wrong' };
+  }
 };
