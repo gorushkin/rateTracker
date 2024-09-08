@@ -19,6 +19,7 @@ export const getCurrencyRate = async (currency: Currency): Promise<string> => {
     const { data } = await axios(getApiUrl(currency));
     return data;
   } catch (error) {
+    console.error('error: ', error);
     return 'null';
   }
 };
