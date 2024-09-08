@@ -20,24 +20,22 @@ class RatesService {
       throw new Error(response.error);
     }
 
-    const rates = Object.entries(response.data).reduce<
-      { currency: string; rate: number }[]
-    >((acc, [currency, rate]) => {
-      if (!this.currencies.includes(currency as Currency)) {
-        return acc;
-      }
+    const rates = this.currencies.reduce<{ currency: string; rate: string }[]>(
+      (acc, currency) => {
+        const rate = response.data[currency].toFixed(2);
 
-      const item = {
-        currency,
-        rate: Number(rate.toFixed(2))
-      };
+        const item = {
+          currency,
+          rate,
+        };
 
-      return [...acc, item];
-    }, []);
+        return [...acc, item];
+      },
+      [],
+    );
 
     return rates;
   };
 }
-
 
 export const ratesService = new RatesService();
