@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,9 +8,9 @@ datasource db {
 }
 
 model User {
-  id       BigInt     @unique
-  username String?
-  role     String? @default("user")
+  id                    BigInt  @unique
+  username              String?
+  role                  String? @default("user")
   isHourlyUpdateEnabled Boolean @default(false)
-  isDailyUpdateEnabled Boolean @default(false)
+  isDailyUpdateEnabled  Boolean @default(false)
 }
