@@ -13,6 +13,7 @@ export class User implements UserDTO {
   isHourlyUpdateEnabled: boolean;
   isDailyUpdateEnabled: boolean;
   users: UserDB = userDB;
+  utcOffset: string;
 
   constructor(data: UserDTO) {
     this.id = data.id;
@@ -20,6 +21,7 @@ export class User implements UserDTO {
     this.role = data.role;
     this.isHourlyUpdateEnabled = data.isHourlyUpdateEnabled;
     this.isDailyUpdateEnabled = data.isDailyUpdateEnabled;
+    this.utcOffset = data.utcOffset;
   }
 
   get isAdmin(): boolean {

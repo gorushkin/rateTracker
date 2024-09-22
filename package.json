@@ -12,6 +12,7 @@
     "client": "npx prisma generate",
     "migration:add": "npx prisma migrate dev",
     "db:deploy": "npx prisma generate deploy",
+    "migrations:run": "npx prisma generate deploy",
     "studio": "npx prisma studio"
   },
   "author": "",
