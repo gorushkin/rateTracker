@@ -1,6 +1,5 @@
 import { userDB, UserDB } from '../database/database';
-import { PrismaClient, User as UserDTO } from '@prisma/client';
-import TelegramBot, { ReplyKeyboardMarkup } from 'node-telegram-bot-api';
+import { User as UserDTO } from '@prisma/client';
 import { compareTime } from '../scheduler/utils';
 import { Dayjs } from 'dayjs';
 

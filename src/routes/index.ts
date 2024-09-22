@@ -20,6 +20,10 @@ export const addRoutes = async (bot: TelegramBot) => {
 
       logger.addLog(`Received message: ${msg.text}`, user);
 
+      if (checkRoute.isSetUserUtcOffset(msg.text)) {
+        return botController.onSetUserUtcOffset(user);
+      }
+
       if (checkRoute.isRouteGetRates(msg.text)) {
         return botController.onGetRates(user);
       }

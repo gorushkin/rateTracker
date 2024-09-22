@@ -17,12 +17,12 @@ class BotController {
   private reply = async (
     user: User,
     message: string,
-    keyboard: TelegramBot.ReplyKeyboardMarkup,
+    replyKeyboard?: TelegramBot.ReplyKeyboardMarkup,
+    inlineKeyboard?: TelegramBot.InlineKeyboardMarkup,
   ) => {
     this.bot.sendMessage(Number(user.id), message, {
-      reply_markup: {
-        ...keyboard,
-      },
+      ...(replyKeyboard && { reply_markup: replyKeyboard }),
+      ...(inlineKeyboard && { reply_markup: inlineKeyboard }),
     });
   };
 
@@ -128,6 +128,10 @@ class BotController {
     this.reply(user, message, keyboards.adminReplyKeyboard);
   };
 
+  onSetUserUtcOffset = async (user: User) => {
+    this.reply(user, 'input utc offset');
+  };
+
   defaultResponse = (user: User) => {
     logger.addLog('Default response', user);
 
@@ -135,7 +139,7 @@ class BotController {
       ? keyboards.defaultAdminReplyKeyboard
       : keyboards.defaultUserReplyKeyboard;
 
-    const message = "I didn't got you!!!";
+    const message = "I didn't get you!!!";
 
     this.reply(user, message, keyboard);
   };

@@ -31,6 +31,7 @@ const isButtonTurnOffDailyUpdates = CompareButton(
 );
 
 const isSettingsInfo = CompareButton(Button.SETTINGS_INFO);
+const isSettingUserUtcOffset = CompareButton(Button.SET_USER_UTC_OFFSET);
 
 const isRouteGetRates = (text?: string) =>
   isCommandGetRates(text) || isButtonGetRates(text);
@@ -52,6 +53,9 @@ const isRouteMainScreen = (text?: string) => isButtonMainScreen(text);
 
 const isRouteSettingsInfo = (text?: string) => isSettingsInfo(text);
 
+const isSetUserUtcOffset = (text?: string) =>
+  isSettingUserUtcOffset(text);
+
 export const checkRoute = {
   isRouteGetRates,
   isRouteSettings,
@@ -61,4 +65,5 @@ export const checkRoute = {
   isRouteHourlyUpdatesSettings,
   isRouteDailyUpdatesSettings,
   isRouteSettingsInfo,
+  isSetUserUtcOffset,
 };
