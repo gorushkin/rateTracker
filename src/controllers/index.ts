@@ -5,6 +5,7 @@ import { logger } from '../utils';
 import { getRates } from '../api';
 import { UserService, userService } from '../services/users';
 import { ratesService } from '../services/rates';
+import { validateTimeZone } from '../routes/libs';
 
 class BotController {
   userService: UserService = userService;
@@ -99,6 +100,10 @@ class BotController {
   };
 
   onSystemInfo = async (user: User) => {
+    if (!user.isAdmin) {
+      throw new Error('User is not an admin');
+    }
+
     logger.addLog('System info', user);
 
     const users = await this.userService.getUsers();
@@ -114,7 +119,11 @@ class BotController {
     this.reply(user, message, keyboards.adminReplyKeyboard);
   };
 
-  onViewLogs = (user: User) => {
+  onViewLogs = async (user: User) => {
+    if (!user.isAdmin) {
+      throw new Error('User is not an admin');
+    }
+
     logger.addLog('View logs', user);
 
     const logs = logger.getLogs();
@@ -129,10 +138,30 @@ class BotController {
   };
 
   onSetUserUtcOffset = async (user: User) => {
+    user.context.setUserUtcOffset(user.id);
+
     this.reply(user, 'input utc offset');
   };
 
-  defaultResponse = (user: User) => {
+  setUtcOffset = async (user: User, message?: string) => {
+    const isTimeZoneValid = validateTimeZone(message ?? '');
+
+    if (!isTimeZoneValid) {
+      return this.reply(
+        user,
+        'Invalid utc offset',
+        keyboards.settingsReplyKeyboard(user),
+      );
+    }
+
+    this.reply(
+      user,
+      'I will do something with this action',
+      keyboards.settingsReplyKeyboard(user),
+    );
+  };
+
+  defaultResponse = async (user: User) => {
     logger.addLog('Default response', user);
 
     const keyboard = user.isAdmin

@@ -2,6 +2,7 @@ import { userDB, UserDB } from '../database/database';
 import { User as UserDTO } from '@prisma/client';
 import { compareTime } from '../scheduler/utils';
 import { Dayjs } from 'dayjs';
+import { context } from '../utils/context';
 
 const DAILY_UPDATE_TIME = '06:00';
 
@@ -13,6 +14,7 @@ export class User implements UserDTO {
   isDailyUpdateEnabled: boolean;
   users: UserDB = userDB;
   utcOffset: string;
+  context = context;
 
   constructor(data: UserDTO) {
     this.id = data.id;
@@ -60,5 +62,9 @@ export class User implements UserDTO {
     this.isDailyUpdateEnabled = !this.isDailyUpdateEnabled;
 
     return updatedUser;
+  };
+
+  getContext = () => {
+    return this.context.getAction(this.id);
   };
 }
