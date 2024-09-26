@@ -95,7 +95,7 @@ const settingsReplyKeyboard = (user: UserDTO) => {
   ]);
 };
 
-export const keyboards = {
+export const replyKeyboards = {
   adminReplyKeyboard,
   defaultAdminReplyKeyboard,
   defaultUserReplyKeyboard,

@@ -1,5 +1,10 @@
-import TelegramBot, { ReplyKeyboardMarkup } from 'node-telegram-bot-api';
-import { keyboards } from '../keyboards';
+import TelegramBot, {
+  ForceReply,
+  InlineKeyboardMarkup,
+  ReplyKeyboardMarkup,
+  ReplyKeyboardRemove,
+} from 'node-telegram-bot-api';
+import { replyKeyboards } from '../keyboards';
 import { User } from '../services/user';
 import { logger } from '../utils';
 import { getRates } from '../api';
@@ -8,10 +13,21 @@ import { ratesService } from '../services/rates';
 import {
   getUserTime,
   minutesToTimezone,
-  timezoneToMinutes,
+  offsetToMinutes,
   validateTimeZone,
 } from '../routes/libs';
 import { AppError } from '../errors';
+
+type ReplyProps = {
+  user: User;
+  message: string;
+  replyMarkup?:
+    | InlineKeyboardMarkup
+    | ReplyKeyboardMarkup
+    | ReplyKeyboardRemove
+    | ForceReply
+    | undefined;
+};
 
 class BotController {
   userService: UserService = userService;
@@ -21,15 +37,15 @@ class BotController {
     this.bot = bot;
   }
 
-  private reply = async (
-    user: User,
-    message: string,
-    replyKeyboard?: TelegramBot.ReplyKeyboardMarkup,
-    inlineKeyboard?: TelegramBot.InlineKeyboardMarkup,
-  ) => {
+  private reply = async (props: ReplyProps) => {
+    const { user, message, replyMarkup } = props;
+
     this.bot.sendMessage(Number(user.id), message, {
-      ...(replyKeyboard && { reply_markup: replyKeyboard }),
-      ...(inlineKeyboard && { reply_markup: inlineKeyboard }),
+      ...(replyMarkup && {
+        reply_markup: {
+          ...replyMarkup,
+        },
+      }),
     });
   };
 
@@ -54,11 +70,11 @@ class BotController {
 
     const message = `Rates at ${userDate}:\n\n${ratesString}`;
 
-    const keyboard = user.isAdmin
-      ? keyboards.defaultAdminReplyKeyboard
-      : keyboards.defaultUserReplyKeyboard;
+    const replyMarkup = user.isAdmin
+      ? replyKeyboards.defaultAdminReplyKeyboard
+      : replyKeyboards.defaultUserReplyKeyboard;
 
-    this.reply(user, message, keyboard);
+    this.reply({ user, message, replyMarkup });
   };
 
   onSettings = async (user: User) => {
@@ -66,7 +82,15 @@ class BotController {
 
     const message = 'There are some settings for you:';
 
-    this.reply(user, message, keyboards.settingsReplyKeyboard(user));
+    console.log(
+      JSON.stringify(replyKeyboards.settingsReplyKeyboard(user), null, 2),
+    );
+
+    this.reply({
+      user,
+      message,
+      replyMarkup: replyKeyboards.settingsReplyKeyboard(user),
+    });
   };
 
   onHourlyUpdatesSettings = async (user: User) => {
@@ -78,7 +102,11 @@ class BotController {
 
     const message = `Hourly updates are ${status}`;
 
-    this.reply(user, message, keyboards.settingsReplyKeyboard(user));
+    this.reply({
+      user,
+      message,
+      replyMarkup: replyKeyboards.settingsReplyKeyboard(user),
+    });
   };
 
   onDailyUpdatesSettings = async (user: User) => {
@@ -90,7 +118,11 @@ class BotController {
 
     const message = `Daily updates are ${status}`;
 
-    this.reply(user, message, keyboards.settingsReplyKeyboard(user));
+    this.reply({
+      user,
+      message,
+      replyMarkup: replyKeyboards.settingsReplyKeyboard(user),
+    });
   };
 
   onSettingsInfo = async (user: User) => {
@@ -104,7 +136,11 @@ class BotController {
       'User settings:\n\n' +
       `Username: ${username}\nID: ${id}\nHourly updates: ${isHourlyUpdateEnabled}\nDaily updates: ${isDailyUpdateEnabled}\nTimezone: ${timeZone}`;
 
-    this.reply(user, message, keyboards.settingsReplyKeyboard(user));
+    this.reply({
+      user,
+      message,
+      replyMarkup: replyKeyboards.settingsReplyKeyboard(user),
+    });
   };
 
   onSystemInfo = async (user: User) => {
@@ -124,7 +160,11 @@ class BotController {
 
     const message = `Current users:\n\n${usersInfo}`;
 
-    this.reply(user, message, keyboards.adminReplyKeyboard);
+    this.reply({
+      user,
+      message,
+      replyMarkup: replyKeyboards.adminReplyKeyboard,
+    });
   };
 
   onViewLogs = async (user: User) => {
@@ -142,13 +182,23 @@ class BotController {
 
     const message = `Logs:\n\n${logsString}`;
 
-    this.reply(user, message, keyboards.adminReplyKeyboard);
+    this.reply({
+      user,
+      message,
+      replyMarkup: replyKeyboards.adminReplyKeyboard,
+    });
   };
 
   showSettingUtcOffset = async (user: User) => {
     user.context.setUserUtcOffset(user.id);
 
-    this.reply(user, 'input utc offset');
+    this.reply({
+      user,
+      message: 'Enter your utc offset',
+      replyMarkup: {
+        remove_keyboard: true,
+      },
+    });
   };
 
   private validateUtcOffsetValue = (message: string, user: User) => {
@@ -156,11 +206,11 @@ class BotController {
 
     if (isTimeZoneValid) return;
 
-    this.reply(
+    this.reply({
       user,
-      'Invalid utc offset',
-      keyboards.settingsReplyKeyboard(user),
-    );
+      message: 'Invalid utc offset',
+      replyMarkup: replyKeyboards.settingsReplyKeyboard(user),
+    });
 
     // TODO: it should be refactored
 
@@ -170,29 +220,29 @@ class BotController {
   setUtcOffset = async (user: User, message?: string) => {
     this.validateUtcOffsetValue(message ?? '', user);
 
-    const offset = timezoneToMinutes(message);
+    const offset = offsetToMinutes(message);
 
     await user.setUtcOffset(offset);
 
     const timeZone = minutesToTimezone(offset);
 
-    this.reply(
+    this.reply({
       user,
-      'Your utc offset has been set to ' + timeZone,
-      keyboards.settingsReplyKeyboard(user),
-    );
+      message: 'Your utc offset has been set to ' + timeZone,
+      replyMarkup: replyKeyboards.settingsReplyKeyboard(user),
+    });
   };
 
   defaultResponse = async (user: User) => {
     logger.addLog('Default response', user);
 
-    const keyboard = user.isAdmin
-      ? keyboards.defaultAdminReplyKeyboard
-      : keyboards.defaultUserReplyKeyboard;
+    const replyMarkup = user.isAdmin
+      ? replyKeyboards.defaultAdminReplyKeyboard
+      : replyKeyboards.defaultUserReplyKeyboard;
 
     const message = "I didn't get you!!!";
 
-    this.reply(user, message, keyboard);
+    this.reply({ user, message, replyMarkup });
   };
 }
 

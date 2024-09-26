@@ -8,14 +8,16 @@ export const validateTimeZone = (timeZone: string) => {
   return regex.test(timeZone);
 };
 
-export const timezoneToMinutes = (timeStr?: string): number => {
+export const offsetToMinutes = (timeStr?: string): number => {
+  const dayLength = 24 * 60;
+
   if (!timeStr) {
     return 0;
   }
 
   const sign = timeStr.startsWith('-') ? -1 : 1;
   const minutes = Number(timeStr.replace('-', ''));
-  return sign * minutes;
+  return (sign * minutes) % dayLength;
 };
 
 export const minutesToTimezone = (minutes: number): string => {
