@@ -162,6 +162,8 @@ class BotController {
       keyboards.settingsReplyKeyboard(user),
     );
 
+    // TODO: it should be refactored
+
     throw new AppError.Validation('Invalid utc offset');
   };
 
@@ -172,9 +174,11 @@ class BotController {
 
     await user.setUtcOffset(offset);
 
+    const timeZone = minutesToTimezone(offset);
+
     this.reply(
       user,
-      'Your utc offset has been set to ' + offset,
+      'Your utc offset has been set to ' + timeZone,
       keyboards.settingsReplyKeyboard(user),
     );
   };

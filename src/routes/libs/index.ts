@@ -4,8 +4,8 @@ import utc from 'dayjs/plugin/utc';
 dayjs.extend(utc);
 
 export const validateTimeZone = (timeZone: string) => {
-  const timeZoneRegex = /^([+-]?)([01]\d|2[0-3]):([0-5]\d)$/;
-  return timeZoneRegex.test(timeZone);
+  const regex = /^-?\d+$/;
+  return regex.test(timeZone);
 };
 
 export const timezoneToMinutes = (timeStr?: string): number => {
@@ -14,8 +14,8 @@ export const timezoneToMinutes = (timeStr?: string): number => {
   }
 
   const sign = timeStr.startsWith('-') ? -1 : 1;
-  const [hours, minutes] = timeStr.replace('-', '').split(':').map(Number);
-  return sign * (hours * 60 + minutes);
+  const minutes = Number(timeStr.replace('-', ''));
+  return sign * minutes;
 };
 
 export const minutesToTimezone = (minutes: number): string => {
