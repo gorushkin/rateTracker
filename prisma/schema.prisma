@@ -13,5 +13,5 @@ model User {
   role                  String? @default("user")
   isHourlyUpdateEnabled Boolean @default(false)
   isDailyUpdateEnabled  Boolean @default(false)
-  utcOffset             String
+  utcOffset             Int  @default(0)
 }

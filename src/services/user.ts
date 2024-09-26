@@ -13,7 +13,7 @@ export class User implements UserDTO {
   isHourlyUpdateEnabled: boolean;
   isDailyUpdateEnabled: boolean;
   users: UserDB = userDB;
-  utcOffset: string;
+  utcOffset: number;
   context = context;
 
   constructor(data: UserDTO) {
@@ -62,6 +62,10 @@ export class User implements UserDTO {
     this.isDailyUpdateEnabled = !this.isDailyUpdateEnabled;
 
     return updatedUser;
+  };
+
+  setUtcOffset = (offset: number) => {
+    return this.users.updateUser(Number(this.id), { utcOffset: offset });
   };
 
   getContext = () => {

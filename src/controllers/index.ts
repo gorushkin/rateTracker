@@ -5,7 +5,13 @@ import { logger } from '../utils';
 import { getRates } from '../api';
 import { UserService, userService } from '../services/users';
 import { ratesService } from '../services/rates';
-import { validateTimeZone } from '../routes/libs';
+import {
+  getUserTime,
+  minutesToTimezone,
+  timezoneToMinutes,
+  validateTimeZone,
+} from '../routes/libs';
+import { AppError } from '../errors';
 
 class BotController {
   userService: UserService = userService;
@@ -33,19 +39,20 @@ class BotController {
     const response = await getRates();
 
     if (!response.ok) {
-      throw new Error(response.error);
-      // return this.reply(user, response.error, keyboards.defaultUserReplyKeyboard);
+      throw new AppError.ApiError('There is no connection to the server');
     }
 
-    const date = new Date().toUTCString();
+    const date = new Date();
 
     const rates = await ratesService.fetchRates();
+
+    const userDate = getUserTime(user.utcOffset, date);
 
     const ratesString = rates
       .map(({ currency, rate }) => `${currency}: ${rate}`)
       .join('\n');
 
-    const message = `Rates at ${date}:\n\n${ratesString}`;
+    const message = `Rates at ${userDate}:\n\n${ratesString}`;
 
     const keyboard = user.isAdmin
       ? keyboards.defaultAdminReplyKeyboard
@@ -91,10 +98,11 @@ class BotController {
     const username = user.username;
     const isHourlyUpdateEnabled = user.isHourlyUpdateEnabled;
     const isDailyUpdateEnabled = user.isDailyUpdateEnabled;
+    const timeZone = minutesToTimezone(user.utcOffset);
 
     const message =
       'User settings:\n\n' +
-      `Username: ${username}\nID: ${id}\nHourly updates: ${isHourlyUpdateEnabled}\nDaily updates: ${isDailyUpdateEnabled}`;
+      `Username: ${username}\nID: ${id}\nHourly updates: ${isHourlyUpdateEnabled}\nDaily updates: ${isDailyUpdateEnabled}\nTimezone: ${timeZone}`;
 
     this.reply(user, message, keyboards.settingsReplyKeyboard(user));
   };
@@ -137,26 +145,36 @@ class BotController {
     this.reply(user, message, keyboards.adminReplyKeyboard);
   };
 
-  onSetUserUtcOffset = async (user: User) => {
+  showSettingUtcOffset = async (user: User) => {
     user.context.setUserUtcOffset(user.id);
 
     this.reply(user, 'input utc offset');
   };
 
-  setUtcOffset = async (user: User, message?: string) => {
+  private validateUtcOffsetValue = (message: string, user: User) => {
     const isTimeZoneValid = validateTimeZone(message ?? '');
 
-    if (!isTimeZoneValid) {
-      return this.reply(
-        user,
-        'Invalid utc offset',
-        keyboards.settingsReplyKeyboard(user),
-      );
-    }
+    if (isTimeZoneValid) return;
 
     this.reply(
       user,
-      'I will do something with this action',
+      'Invalid utc offset',
+      keyboards.settingsReplyKeyboard(user),
+    );
+
+    throw new AppError.Validation('Invalid utc offset');
+  };
+
+  setUtcOffset = async (user: User, message?: string) => {
+    this.validateUtcOffsetValue(message ?? '', user);
+
+    const offset = timezoneToMinutes(message);
+
+    await user.setUtcOffset(offset);
+
+    this.reply(
+      user,
+      'Your utc offset has been set to ' + offset,
       keyboards.settingsReplyKeyboard(user),
     );
   };

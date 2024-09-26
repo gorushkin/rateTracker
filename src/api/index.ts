@@ -5,6 +5,7 @@ type Rates = Record<string, number>;
 type RatesInfo = {
   rates: Rates;
   base: string;
+  date: string;
 };
 
 const url = 'http://46.19.64.117/currency-rates/oer';
