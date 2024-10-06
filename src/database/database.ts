@@ -1,57 +1,66 @@
-import { Prisma, PrismaClient, User } from '@prisma/client';
-import { DefaultArgs } from '@prisma/client/runtime/library';
 import { DEFAULT_TIMEZONE_OFFSET } from '../config';
-
-const prisma = new PrismaClient();
+import { db, UserDTO, users } from '../db';
+import { eq } from 'drizzle-orm';
 
 export class UserDB {
-  user: Prisma.UserDelegate<DefaultArgs>;
-
-  constructor(db: PrismaClient) {
-    this.user = db.user;
-  }
+  users = users;
+  db = db;
 
   checkUser = (id: number): Promise<boolean> => {
     throw new Error('Not implemented');
   };
 
-  addUser = async (id: number, username: string = ''): Promise<User> => {
+  addUser = async (id: number, username: string = ''): Promise<UserDTO> => {
+    const users = await this.getUsers();
+
     const user = await this.getUser(id);
 
-    if (user) return user;
+    if (!!user) {
+      return user;
+    }
 
-    const length = await this.user.count();
+    const length = users.length;
 
     const role = length === 0 ? 'admin' : 'user';
 
-    const newUser = await this.user.create({
-      data: {
+    const [newUser] = await this.db
+      .insert(this.users)
+      .values({
+        id,
         username,
         role,
-        id,
         utcOffset: DEFAULT_TIMEZONE_OFFSET,
-      },
-    });
+      })
+      .returning();
 
     return newUser;
   };
 
-  getUser = (id: number): Promise<User | null> => {
-    return this.user.findUnique({ where: { id } });
+  getUser = async (id: number): Promise<UserDTO | null> => {
+    const users = await this.db
+      .select()
+      .from(this.users)
+      .where(eq(this.users.id, id))
+      .execute();
+
+    const user = users[0];
+
+    return user || null;
   };
 
-  getUsers = (): Promise<User[]> => {
-    return this.user.findMany();
+  getUsers = (): Promise<UserDTO[]> => {
+    return this.db.select().from(this.users).execute();
   };
 
-  updateUser = async (id: number, data: Partial<User>): Promise<User> => {
-    const user = await this.user.update({
-      where: { id },
-      data,
-    });
+  updateUser = async (id: number, data: Partial<UserDTO>): Promise<UserDTO> => {
+    const updatedUser = await this.db
+      .update(this.users)
+      .set(data)
+      .where(eq(this.users.id, id))
+      .returning();
 
-    return user;
+    return updatedUser[0];
   };
 }
 
-export const userDB = new UserDB(prisma);
+export const userDB = new UserDB();

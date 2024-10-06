@@ -2,9 +2,7 @@ import { userDB, UserDB } from '../database/database';
 import { User } from './user';
 
 export class UserService {
-  users: UserDB = userDB;
-
-  constructor() {}
+  private users: UserDB = userDB;
 
   addUser = async (id: number, username: string = ''): Promise<User> => {
     const user = await this.users.addUser(id, username);
