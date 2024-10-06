@@ -8,11 +8,9 @@ if (!TELEGRAM_API) {
 
 import { scheduler } from './scheduler';
 import { initBot } from './bot';
-import { initDB } from './databaseConnection';
 
 const init = async () => {
   const botController = await initBot(TELEGRAM_API);
-  await initDB();
 
   scheduler(botController);
 };
