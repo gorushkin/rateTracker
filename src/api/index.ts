@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { config } from '../config';
 
 type Rates = Record<string, number>;
 
@@ -8,7 +9,7 @@ type RatesInfo = {
   date: string;
 };
 
-const url = 'http://46.19.64.117/currency-rates/oer';
+const url = `${config.API_URL}currency-rates/oer`;
 
 export type Response<T> = { ok: true; data: T } | { ok: false; error: string };
 

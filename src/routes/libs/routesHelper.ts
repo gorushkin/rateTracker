@@ -1,5 +1,5 @@
 import { BotController } from '../../controllers';
-import { errorHandler } from '../../errors';
+import { errorHandler } from '../../utils/errors';
 import { Command, Button } from '../../keyboards';
 import { User } from '../../services/user';
 import { UserAction } from '../../utils/context';

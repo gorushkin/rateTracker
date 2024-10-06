@@ -1,9 +1,10 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { BotController } from '../controllers';
 import { commands } from '../keyboards';
-import { logger } from '../utils';
 import { getActionController, getRouteController } from './libs/routesHelper';
 import { userService } from '../services/users';
+import { messageLogger } from '../utils/logger';
+
 
 export const addRoutes = async (bot: TelegramBot) => {
   const botController = new BotController(bot);
@@ -18,7 +19,7 @@ export const addRoutes = async (bot: TelegramBot) => {
     try {
       const user = await userService.addUser(id, username);
 
-      logger.addLog(`Received message: ${msg.text}`, user);
+      messageLogger(`Received message: ${msg.text}`);
 
       const context = user.getContext();
 

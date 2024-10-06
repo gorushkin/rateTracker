@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import TelegramBot from 'node-telegram-bot-api';
 import { BotController } from '../controllers';
 import { userService } from '../services/users';
+import { infoLogger } from '../utils/logger';
 
 enum INTERVALS {
   HOUR = '0 * * * *',
@@ -14,6 +15,8 @@ export const scheduler = async (botController?: BotController) => {
   if (!botController) {
     throw new Error('Bot is not initialized');
   }
+
+  infoLogger('Scheduler started');
 
   cron.schedule(INTERVALS.HOUR, async () => {
     const users = await userService.getUsers();
