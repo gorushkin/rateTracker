@@ -10,8 +10,6 @@ type ErrorType =
 class AppError extends Error {
   type: ErrorType = 'InternalError';
 
-  static Validation: typeof ValidationError;
-  static ApiError: typeof ApiError;
   constructor(message: string) {
     super(message);
   }
@@ -31,9 +29,6 @@ class ApiError extends AppError {
   }
 }
 
-
-AppError.Validation = ValidationError;
-
 const errorHandler = async (func: Promise<void>) => {
   try {
     await func;
@@ -46,4 +41,4 @@ const errorHandler = async (func: Promise<void>) => {
   }
 };
 
-export { AppError, errorHandler };
+export { AppError, errorHandler, ValidationError, ApiError };

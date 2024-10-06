@@ -16,7 +16,7 @@ import {
   offsetToMinutes,
   validateTimeZone,
 } from '../routes/libs';
-import { AppError } from '../errors';
+import { ApiError, ValidationError } from '../errors';
 
 type ReplyProps = {
   user: User;
@@ -53,9 +53,10 @@ class BotController {
     logger.addLog('Getting rates', user);
 
     const response = await getRates();
+    console.log('response: ', response);
 
     if (!response.ok) {
-      throw new AppError.ApiError('There is no connection to the server');
+      throw new ApiError('There is no connection to the server');
     }
 
     const date = new Date();
@@ -214,7 +215,7 @@ class BotController {
 
     // TODO: it should be refactored
 
-    throw new AppError.Validation('Invalid utc offset');
+    throw new ValidationError('Invalid utc offset');
   };
 
   setUtcOffset = async (user: User, message?: string) => {
