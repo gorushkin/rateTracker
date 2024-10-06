@@ -3,7 +3,7 @@ import { BotController } from '../controllers';
 import { commands } from '../keyboards';
 import { getActionController, getRouteController } from './libs/routesHelper';
 import { userService } from '../services/users';
-import { messageLogger } from '../utils/logger';
+import { log } from '../utils';
 
 
 export const addRoutes = async (bot: TelegramBot) => {
@@ -19,7 +19,7 @@ export const addRoutes = async (bot: TelegramBot) => {
     try {
       const user = await userService.addUser(id, username);
 
-      messageLogger(`Received message: ${msg.text}`);
+      log.message(`Received message: ${msg.text}`);
 
       const context = user.getContext();
 

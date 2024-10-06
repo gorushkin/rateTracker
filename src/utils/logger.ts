@@ -29,6 +29,11 @@ class Logger {
     this.url = url;
   };
 
+  getLastLogs = () => {
+    const lastLogs = this.lines.slice(-10);
+    return lastLogs.map((line) => line.toString()).join('\n');
+  };
+
   toString() {
     return this.lines.join('\n');
   }
@@ -53,10 +58,16 @@ class Logger {
 }
 
 export const logger = new Logger();
-export const messageLogger = logger.log('message');
-export const errorLogger = logger.log('error');
-export const infoLogger = logger.log('info');
+const message = logger.log('message');
+const error = logger.log('error');
+const info = logger.log('info');
+const response = logger.log('response');
+const controller = logger.log('controller');
 
-export const responseLogger = logger.log('response');
-
-export const controllerLogger = logger.log('controller');
+export const log = {
+  message,
+  error,
+  info,
+  response,
+  controller,
+};

@@ -17,7 +17,7 @@ import {
   validateTimeZone,
 } from '../routes/libs';
 import { ApiError, ValidationError } from '../utils/errors';
-import { controllerLogger, responseLogger } from '../utils/logger';
+import { log } from '../utils';
 
 type ReplyProps = {
   user: User;
@@ -51,7 +51,7 @@ class BotController {
   };
 
   onGetRates = async (user: User) => {
-    controllerLogger(`Getting rates' ${user}`);
+    log.controller(`Getting rates' ${user}`);
 
     const response = await getRates();
 
@@ -79,7 +79,7 @@ class BotController {
   };
 
   onSettings = async (user: User) => {
-    controllerLogger(`Settings ${user}`);
+    log.controller(`Settings ${user}`);
 
     const message = 'There are some settings for you:';
 
@@ -95,7 +95,7 @@ class BotController {
   };
 
   onHourlyUpdatesSettings = async (user: User) => {
-    controllerLogger(`HourlyUpdatesSettings ${user}`);
+    log.controller(`HourlyUpdatesSettings ${user}`);
 
     const { isHourlyUpdateEnabled } = await user.toggleHourlyUpdates();
 
@@ -111,7 +111,7 @@ class BotController {
   };
 
   onDailyUpdatesSettings = async (user: User) => {
-    controllerLogger(`DailyUpdatesSettings ${user}`);
+    log.controller(`DailyUpdatesSettings ${user}`);
 
     const { isDailyUpdateEnabled } = await user.toggleDailyUpdate();
 
@@ -149,7 +149,7 @@ class BotController {
       throw new Error('User is not an admin');
     }
 
-    controllerLogger(`System info ${user}`);
+    log.controller(`System info ${user}`);
 
     const users = await this.userService.getUsers();
 
@@ -173,16 +173,11 @@ class BotController {
       throw new Error('User is not an admin');
     }
 
-    controllerLogger(`View logs ${user}`);
+    log.controller(`View logs ${user}`);
 
-    // const logs = logger.getLogs();
+    const logs = logger.getLastLogs();
 
-    // const logsString = logs
-    //   .map(({ time, message, id }) => `${id}: ${time} - ${message}`)
-    //   .join('\n');
-
-    // const message = `Logs:\n\n${logsString}`;
-    const message = `Is not ready yet`;
+    const message = `Logs:\n\n${logs}`;
 
     this.reply({
       user,
@@ -236,7 +231,7 @@ class BotController {
   };
 
   defaultResponse = async (user: User) => {
-    responseLogger(`Default response for user ${user}`);
+    log.response(`Default response for user ${user}`);
 
     const replyMarkup = user.isAdmin
       ? replyKeyboards.defaultAdminReplyKeyboard
