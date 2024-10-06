@@ -1,15 +1,15 @@
-FROM node:19-alpine
+FROM node:20-alpine
 
+RUN apk add --no-cache python3 make g++
 WORKDIR /app
 
 COPY package.json ./
 COPY tsconfig.json ./
+COPY drizzle.config.ts ./
 RUN npm install
 
 COPY src ./src
-COPY prisma ./prisma
 
-RUN npm run db:deploy
 RUN npm run build
 
-CMD node dist/index.js
+CMD npm run start

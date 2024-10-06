@@ -1,20 +1,22 @@
 import { userDB, UserDB } from '../database/database';
-import { User as UserDTO } from '@prisma/client';
 import { compareTime } from '../scheduler/utils';
 import { Dayjs } from 'dayjs';
 import { context } from '../utils/context';
+import { UserDTO } from '../db';
 
 const DAILY_UPDATE_TIME = '06:00';
 
 export class User implements UserDTO {
-  id: bigint;
-  username: string | null;
-  role: string | null;
+  id: number;
+  username: string;
+  role: UserDTO['role'];
   isHourlyUpdateEnabled: boolean;
   isDailyUpdateEnabled: boolean;
   users: UserDB = userDB;
   utcOffset: number;
-  context = context;
+  private context = context;
+  updatedAt: string;
+  createdAt: string;
 
   constructor(data: UserDTO) {
     this.id = data.id;
@@ -23,6 +25,8 @@ export class User implements UserDTO {
     this.isHourlyUpdateEnabled = data.isHourlyUpdateEnabled;
     this.isDailyUpdateEnabled = data.isDailyUpdateEnabled;
     this.utcOffset = data.utcOffset;
+    this.updatedAt = data.updatedAt;
+    this.createdAt = data.createdAt;
   }
 
   get isAdmin(): boolean {
@@ -69,6 +73,10 @@ export class User implements UserDTO {
   };
 
   getContext = () => {
-    return this.context.getAction(this.id);
+    return this.context.getAction(BigInt(this.id));
+  };
+
+  setUserUtcOffset = () => {
+    return this.context.setUserUtcOffset(BigInt(this.id));
   };
 }

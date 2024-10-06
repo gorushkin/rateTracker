@@ -1,4 +1,4 @@
-import { PrismaClient, User as UserDTO } from '@prisma/client';
+import { UserDTO } from "../db";
 
 class LogLine {
   constructor(

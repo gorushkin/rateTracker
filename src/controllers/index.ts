@@ -53,7 +53,6 @@ class BotController {
     logger.addLog('Getting rates', user);
 
     const response = await getRates();
-    console.log('response: ', response);
 
     if (!response.ok) {
       throw new ApiError('There is no connection to the server');
@@ -191,7 +190,7 @@ class BotController {
   };
 
   showSettingUtcOffset = async (user: User) => {
-    user.context.setUserUtcOffset(user.id);
+    user.setUserUtcOffset();
 
     this.reply({
       user,

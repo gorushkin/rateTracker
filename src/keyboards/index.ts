@@ -1,10 +1,9 @@
-import { User as UserDTO } from '@prisma/client';
-
 import {
   type KeyboardButton,
   type ReplyKeyboardMarkup,
   type BotCommand,
 } from 'node-telegram-bot-api';
+import { UserDTO } from '../db';
 
 export enum Button {
   GET_RATES = 'Get rates',
