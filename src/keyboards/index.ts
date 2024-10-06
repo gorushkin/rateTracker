@@ -18,6 +18,7 @@ export enum Button {
   TURN_OFF_DAILY_UPDATES = 'Turn off daily updates',
   TURN_OFF_HOURLY_UPDATES = 'Turn off hourly updates',
   SETTINGS_INFO = 'Settings info',
+  SET_USER_UTC_OFFSET = 'Set utc offset',
 }
 
 export enum Command {
@@ -40,6 +41,7 @@ const getSystemInfoButton = getReplyButton(Button.SYSTEM_INFO);
 const getLogsButton = getReplyButton(Button.VIEW_LOGS);
 const mainScreenButton = getReplyButton(Button.MAIN_SCREEN);
 const turnOnHourlyUpdateButton = getReplyButton(Button.TURN_ON_HOURLY_UPDATES);
+const setUserUtcOffsetButton = getReplyButton(Button.SET_USER_UTC_OFFSET);
 const turnOffHourlyUpdateButton = getReplyButton(
   Button.TURN_OFF_HOURLY_UPDATES,
 );
@@ -85,6 +87,7 @@ const settingsReplyKeyboard = (user: UserDTO) => {
     : turnOnDailyUpdateButton;
 
   return getReplyKeyboard([
+    [setUserUtcOffsetButton],
     [hourlyUpdateButton],
     [dailyUpdateButton],
     [getSettingsInfo],
@@ -92,7 +95,7 @@ const settingsReplyKeyboard = (user: UserDTO) => {
   ]);
 };
 
-export const keyboards = {
+export const replyKeyboards = {
   adminReplyKeyboard,
   defaultAdminReplyKeyboard,
   defaultUserReplyKeyboard,

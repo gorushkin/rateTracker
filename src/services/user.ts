@@ -1,8 +1,8 @@
 import { userDB, UserDB } from '../database/database';
-import { PrismaClient, User as UserDTO } from '@prisma/client';
-import TelegramBot, { ReplyKeyboardMarkup } from 'node-telegram-bot-api';
+import { User as UserDTO } from '@prisma/client';
 import { compareTime } from '../scheduler/utils';
 import { Dayjs } from 'dayjs';
+import { context } from '../utils/context';
 
 const DAILY_UPDATE_TIME = '06:00';
 
@@ -13,6 +13,8 @@ export class User implements UserDTO {
   isHourlyUpdateEnabled: boolean;
   isDailyUpdateEnabled: boolean;
   users: UserDB = userDB;
+  utcOffset: number;
+  context = context;
 
   constructor(data: UserDTO) {
     this.id = data.id;
@@ -20,6 +22,7 @@ export class User implements UserDTO {
     this.role = data.role;
     this.isHourlyUpdateEnabled = data.isHourlyUpdateEnabled;
     this.isDailyUpdateEnabled = data.isDailyUpdateEnabled;
+    this.utcOffset = data.utcOffset;
   }
 
   get isAdmin(): boolean {
@@ -59,5 +62,13 @@ export class User implements UserDTO {
     this.isDailyUpdateEnabled = !this.isDailyUpdateEnabled;
 
     return updatedUser;
+  };
+
+  setUtcOffset = (offset: number) => {
+    return this.users.updateUser(Number(this.id), { utcOffset: offset });
+  };
+
+  getContext = () => {
+    return this.context.getAction(this.id);
   };
 }

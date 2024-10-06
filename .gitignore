@@ -55,4 +55,3 @@ yarn-error.log*
 .vercel
 
 *.sqlite3
-*.sql

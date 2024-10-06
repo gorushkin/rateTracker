@@ -1,64 +1,33 @@
-import { Command, Button } from '../../keyboards';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 
-const compareCommand = (command: Command) => (text?: string) =>
-  text === `/${command}`;
+dayjs.extend(utc);
 
-const isCommandGetRates = compareCommand(Command.GET_RATES);
-const isCommandSettings = compareCommand(Command.SETTINGS);
+export const validateTimeZone = (timeZone: string) => {
+  const regex = /^-?\d+$/;
+  return regex.test(timeZone);
+};
 
-const CompareButton = (button: Button) => (text?: string) => text === button;
+export const offsetToMinutes = (timeStr?: string): number => {
+  const dayLength = 24 * 60;
 
-const isButtonGetRates = CompareButton(Button.GET_RATES);
+  if (!timeStr) {
+    return 0;
+  }
 
-const isButtonSettings = CompareButton(Button.SETTINGS);
+  const sign = timeStr.startsWith('-') ? -1 : 1;
+  const minutes = Number(timeStr.replace('-', ''));
+  return (sign * minutes) % dayLength;
+};
 
-const isButtonSystemInfo = CompareButton(Button.SYSTEM_INFO);
+export const minutesToTimezone = (minutes: number): string => {
+  const sign = minutes < 0 ? '-' : '+';
+  const absMinutes = Math.abs(minutes);
+  const hours = Math.floor(absMinutes / 60);
+  const remainingMinutes = absMinutes % 60;
+  return `${sign}${String(hours).padStart(2, '0')}:${String(remainingMinutes).padStart(2, '0')}`;
+};
 
-const isButtonViewLogs = CompareButton(Button.VIEW_LOGS);
-
-const isButtonMainScreen = CompareButton(Button.MAIN_SCREEN);
-
-const isButtonTurnOnHourlyUpdates = CompareButton(
-  Button.TURN_ON_HOURLY_UPDATES,
-);
-const isButtonTurnOffHourlyUpdates = CompareButton(
-  Button.TURN_OFF_HOURLY_UPDATES,
-);
-
-const isButtonTurnOnDailyUpdates = CompareButton(Button.TURN_ON_DAILY_UPDATES);
-const isButtonTurnOffDailyUpdates = CompareButton(
-  Button.TURN_OFF_DAILY_UPDATES,
-);
-
-const isSettingsInfo = CompareButton(Button.SETTINGS_INFO);
-
-const isRouteGetRates = (text?: string) =>
-  isCommandGetRates(text) || isButtonGetRates(text);
-
-const isRouteSettings = (text?: string) =>
-  isCommandSettings(text) || isButtonSettings(text);
-
-const isRouteHourlyUpdatesSettings = (text?: string) =>
-  isButtonTurnOffHourlyUpdates(text) || isButtonTurnOnHourlyUpdates(text);
-
-const isRouteDailyUpdatesSettings = (text?: string) =>
-  isButtonTurnOnDailyUpdates(text) || isButtonTurnOffDailyUpdates(text);
-
-const isRouteSystemInfo = (text?: string) => isButtonSystemInfo(text);
-
-const isRouteViewLogs = (text?: string) => isButtonViewLogs(text);
-
-const isRouteMainScreen = (text?: string) => isButtonMainScreen(text);
-
-const isRouteSettingsInfo = (text?: string) => isSettingsInfo(text);
-
-export const checkRoute = {
-  isRouteGetRates,
-  isRouteSettings,
-  isRouteSystemInfo,
-  isRouteViewLogs,
-  isRouteMainScreen,
-  isRouteHourlyUpdatesSettings,
-  isRouteDailyUpdatesSettings,
-  isRouteSettingsInfo,
+export const getUserTime = (utcOffset: number, date: Date): string => {
+  return dayjs(date).utcOffset(utcOffset).format('YYYY-MM-DD HH:mm:ss');
 };

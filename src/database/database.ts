@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient, User } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
+import { DEFAULT_TIMEZONE_OFFSET } from '../config';
 
 const prisma = new PrismaClient();
 
@@ -28,6 +29,7 @@ export class UserDB {
         username,
         role,
         id,
+        utcOffset: DEFAULT_TIMEZONE_OFFSET,
       },
     });
 
