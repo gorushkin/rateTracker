@@ -42,6 +42,7 @@ class BotController {
     const { user, message, replyMarkup } = props;
 
     this.bot.sendMessage(Number(user.id), message, {
+      parse_mode: 'Markdown',
       ...(replyMarkup && {
         reply_markup: {
           ...replyMarkup,
@@ -61,15 +62,11 @@ class BotController {
 
     const date = new Date();
 
-    const rates = await ratesService.fetchRates();
+    const ratesString = await ratesService.fetchRates();
 
     const userDate = getUserTime(user.utcOffset, date);
 
-    const ratesString = rates
-      .map(({ currency, rate }) => `${currency}: ${rate}`)
-      .join('\n');
-
-    const message = `Rates at ${userDate}:\n\n${ratesString}`;
+    const message = `Rates at ${userDate}:\n\n\`${ratesString}\``;
 
     const replyMarkup = user.isAdmin
       ? replyKeyboards.defaultAdminReplyKeyboard
