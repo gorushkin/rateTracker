@@ -21,6 +21,10 @@ const getDiffInfo = (
 
   const diff = current - prev;
 
+  if (Math.abs(diff) < 0.001) {
+    return '';
+  }
+
   return `${diffType}: ${getIcon(diff)} ${diff.toFixed(2).padStart(5, ' ')};`;
 };
 
