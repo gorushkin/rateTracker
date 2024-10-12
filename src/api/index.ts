@@ -9,7 +9,7 @@ type RatesInfo = {
   date: string;
 };
 
-const url = `${config.API_URL}currency-rates/oer`;
+const url = `${config.API_URL}/currency-rates/oer`;
 
 export type Response<T> = { ok: true; data: T } | { ok: false; error: string };
 
