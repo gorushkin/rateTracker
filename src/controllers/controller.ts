@@ -61,6 +61,11 @@ export class Controller {
     return `You have been registered as ${user}`;
   };
 
+
+  showSettings = async (props: ControllerPayload): Promise<string> => {
+    return 'Settings';
+  };
+
   defaultReply = async (props: ControllerPayload) => {
     const { id } = props;
     await this.getUser(id);

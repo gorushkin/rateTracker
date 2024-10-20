@@ -6,6 +6,7 @@ export enum UserAction {
   DEFAULT = 'DEFAULT',
   START = 'START',
   SYSTEM_INFO = 'SYSTEM_INFO',
+  SHOW_SETTINGS = 'SHOW_SETTINGS',
 }
 
 class Context {

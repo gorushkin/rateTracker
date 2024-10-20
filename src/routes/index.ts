@@ -6,6 +6,7 @@ import { log } from '../utils';
 import { context, UserAction } from '../utils/context';
 import { Controller, ControllerFunction } from '../controllers/controller';
 import { AppError, AuthenticationError } from '../utils/errors';
+import { User } from '../services/user';
 
 export class Routes {
   private controller = new Controller();
@@ -29,7 +30,7 @@ export class Routes {
   private routeMap: Record<
     UserAction,
     {
-      options: SendBasicOptions;
+      options: (user?: User | null) => SendBasicOptions;
       controller: ControllerFunction;
     }
   > = {
@@ -61,6 +62,10 @@ export class Routes {
       controller: this.controller.saveUserUtcOffset,
       options: getReplyParams.getDefaultParams,
     },
+    [UserAction.SHOW_SETTINGS]: {
+      controller: this.controller.showSettings,
+      options: getReplyParams.getDefaultParams,
+    },
   };
 
   private getRoute = (props: { message?: string; id: number }): UserAction => {
@@ -79,29 +84,37 @@ export class Routes {
   }) => {
     const { id, message = '', username = '' } = params;
 
+    const user = await userService.getUser(id);
+
     const route = this.getRoute({ message, id });
 
     const { controller, options } = this.routeMap[route];
 
     const payload = { id, username, data: message };
 
+    const optionsKeyboard = options(user);
+
     try {
       const response = await controller(payload);
 
-      this.bot.sendMessage(id, response, options);
+      this.bot.sendMessage(id, response, optionsKeyboard);
     } catch (error) {
       if (error instanceof AuthenticationError) {
         return this.bot.sendMessage(
           id,
           error.message,
-          getReplyParams.getRegisterParams,
+          getReplyParams.getRegisterParams(),
         );
       }
 
       const message =
         error instanceof AppError ? error.message : 'Something went wrong';
 
-      return this.bot.sendMessage(id, message, getReplyParams.getDefaultParams);
+      return this.bot.sendMessage(
+        id,
+        message,
+        getReplyParams.getDefaultParams(user),
+      );
     }
   };
 

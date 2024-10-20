@@ -26,7 +26,7 @@ const ButtonTextMap: Record<Command, string> = {
   [Command.SET_OFFSET]: 'Set offset',
 };
 
-type GetMarkupKeyboard = (user?: User) => ReplyKeyboardMarkup;
+type GetMarkupKeyboard = (user?: User | null) => ReplyKeyboardMarkup;
 
 const getReplyButton = (command: Command): KeyboardButton => {
   const text = command;
@@ -48,7 +48,7 @@ const getRegisterKeyboard: GetMarkupKeyboard = () => ({
   resize_keyboard: true,
 });
 
-const getDefaultKeyboard: GetMarkupKeyboard = (user?: User) => ({
+const getDefaultKeyboard: GetMarkupKeyboard = (user) => ({
   keyboard: [
     [
       getRatesReplyButton,
@@ -93,9 +93,14 @@ const getSendMessageOptions =
 
 const getMarkdownOptions = getSendMessageOptions(true);
 
-export const getRegisterParams = getMarkdownOptions(getRegisterKeyboard());
-export const getDefaultEmptyParams = getMarkdownOptions();
-export const getDefaultParams = getMarkdownOptions(getDefaultKeyboard());
+export const getRegisterParams = () =>
+  getMarkdownOptions(getRegisterKeyboard());
+
+export const getDefaultEmptyParams = (user?: User | null) =>
+  getMarkdownOptions();
+
+export const getDefaultParams = (user?: User | null) =>
+  getMarkdownOptions(getDefaultKeyboard(user));
 
 export const getReplyParams = {
   getRegisterParams,
