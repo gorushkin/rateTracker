@@ -29,6 +29,13 @@ class ApiError extends AppError {
   }
 }
 
+class AuthenticationError extends AppError {
+  type: ErrorType = 'AuthenticationError';
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 const errorHandler = async (func: Promise<void>) => {
   try {
     await func;
@@ -41,4 +48,4 @@ const errorHandler = async (func: Promise<void>) => {
   }
 };
 
-export { AppError, errorHandler, ValidationError, ApiError };
+export { AppError, errorHandler, ValidationError, ApiError, AuthenticationError };

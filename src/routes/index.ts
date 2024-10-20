@@ -1,40 +1,123 @@
-import TelegramBot from 'node-telegram-bot-api';
-import { BotController } from '../controllers';
-import { commands } from '../keyboards';
+import TelegramBot, { SendBasicOptions } from 'node-telegram-bot-api';
+import { Command, commands, getReplyParams } from '../keyboards/keyboards';
 import { getActionController, getRouteController } from './libs/routesHelper';
 import { userService } from '../services/users';
 import { log } from '../utils';
+import { context, UserAction } from '../utils/context';
+import { Controller, ControllerFunction } from '../controllers/controller';
+import { AppError, AuthenticationError } from '../utils/errors';
 
+export class Routes {
+  private controller = new Controller();
 
-export const addRoutes = async (bot: TelegramBot) => {
-  const botController = new BotController(bot);
+  constructor(private bot: TelegramBot) {
+    void bot.setMyCommands(commands);
 
-  void bot.setMyCommands(commands);
+    this.addOnMessageHandler(bot);
+    this.addOnCallBackQueryHandler(bot);
+  }
 
-  bot.on('message', async (msg: TelegramBot.Message) => {
-    const {
-      chat: { id, username },
-    } = msg;
+  private actionMap = {
+    [Command.SETTINGS]: UserAction.SET_USER_UTC_OFFSET,
+    [Command.GET_RATES]: UserAction.GETTING_RATES,
+    [Command.START]: UserAction.START,
+    [Command.REGISTER]: UserAction.REGISTER,
+    [Command.SYSTEM_INFO]: UserAction.DEFAULT,
+    [Command.SET_OFFSET]: UserAction.SET_USER_UTC_OFFSET,
+  };
+
+  private routeMap: Record<
+    UserAction,
+    {
+      options: SendBasicOptions;
+      controller: ControllerFunction;
+    }
+  > = {
+    [UserAction.SET_USER_UTC_OFFSET]: {
+      controller: this.controller.setUserUtcOffset,
+      options: getReplyParams.getDefaultEmptyParams,
+    },
+    [UserAction.GETTING_RATES]: {
+      controller: this.controller.getRates,
+      options: getReplyParams.getDefaultParams,
+    },
+    [UserAction.DEFAULT]: {
+      controller: this.controller.defaultReply,
+      options: getReplyParams.getDefaultParams,
+    },
+    [UserAction.START]: {
+      controller: this.controller.start,
+      options: getReplyParams.getDefaultEmptyParams,
+    },
+    [UserAction.REGISTER]: {
+      controller: this.controller.registerUser,
+      options: getReplyParams.getDefaultEmptyParams,
+    },
+    [UserAction.SYSTEM_INFO]: {
+      controller: this.controller.registerUser,
+      options: getReplyParams.getDefaultEmptyParams,
+    },
+    [UserAction.SAVE_USER_UTC_OFFSET]: {
+      controller: this.controller.saveUserUtcOffset,
+      options: getReplyParams.getDefaultParams,
+    },
+  };
+
+  private getRoute = (props: { message?: string; id: number }): UserAction => {
+    const { message, id } = props;
+    const userAction = context.getAction(id);
+
+    const action = this.actionMap[message as Command] ?? UserAction.DEFAULT;
+
+    return userAction ?? action;
+  };
+
+  private handleMessage = async (params: {
+    id: number;
+    message?: string;
+    username?: string;
+  }) => {
+    const { id, message = '', username = '' } = params;
+
+    const route = this.getRoute({ message, id });
+
+    const { controller, options } = this.routeMap[route];
+
+    const payload = { id, username, data: message };
 
     try {
-      const user = await userService.addUser(id, username);
+      const response = await controller(payload);
 
-      log.message(`Received message: ${msg.text}`);
-
-      const context = user.getContext();
-
-      if (context) {
-        const actionController = getActionController(botController)(context);
-        return actionController(user, msg.text);
+      this.bot.sendMessage(id, response, options);
+    } catch (error) {
+      if (error instanceof AuthenticationError) {
+        return this.bot.sendMessage(
+          id,
+          error.message,
+          getReplyParams.getRegisterParams,
+        );
       }
 
-      const controller = getRouteController(botController)(msg.text);
+      const message =
+        error instanceof AppError ? error.message : 'Something went wrong';
 
-      return controller(user, msg.text);
-    } catch (error) {
-      console.log('error: ', error);
+      return this.bot.sendMessage(id, message, getReplyParams.getDefaultParams);
     }
-  });
+  };
 
-  return botController;
-};
+  private addOnMessageHandler = (bot: TelegramBot) => {
+    bot.on('message', (msg) =>
+      this.handleMessage({
+        id: msg.chat.id,
+        message: msg.text,
+        username: msg.chat.username,
+      }),
+    );
+  };
+
+  private addOnCallBackQueryHandler = (bot: TelegramBot) => {
+    bot.on('callback_query', async (query) => {
+      this.handleMessage({ id: query.from.id, message: query.data });
+    });
+  };
+}

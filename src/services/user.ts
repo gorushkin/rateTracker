@@ -1,8 +1,8 @@
 import { userDB, UserDB } from '../database/database';
 import { compareTime } from '../scheduler/utils';
 import { Dayjs } from 'dayjs';
-import { context } from '../utils/context';
 import { UserDTO } from '../db';
+import { getUserTime } from '../routes/libs';
 
 const DAILY_UPDATE_TIME = '06:00';
 
@@ -14,7 +14,6 @@ export class User implements UserDTO {
   isDailyUpdateEnabled: boolean;
   users: UserDB = userDB;
   utcOffset: number;
-  private context = context;
   updatedAt: string;
   createdAt: string;
 
@@ -72,15 +71,16 @@ export class User implements UserDTO {
     return this.users.updateUser(Number(this.id), { utcOffset: offset });
   };
 
-  getContext = () => {
-    return this.context.getAction(BigInt(this.id));
-  };
-
   setUserUtcOffset = () => {
-    return this.context.setUserUtcOffset(BigInt(this.id));
+    // return this.context.saveUserUtcOffset(this.id);
+    throw new Error('Method not implemented');
   };
 
   toString = () => {
     return `User: ${this.id}, ${this.username}, ${this.role}`;
-  }
+  };
+
+  getUserDate = (date?: Date) => {
+    return getUserTime(this.utcOffset, date ?? new Date());
+  };
 }
