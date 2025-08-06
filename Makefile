@@ -8,6 +8,7 @@ stop:
 
 create:
 	docker rm -f ${CONTAINER_NAME} 2>/dev/null || true
+	docker rm -f ${CONTAINER_NAME} 2>/dev/null || true
 	docker run -d \
 		-p ${PORT}:${PORT} \
 		-v $(PWD)/db/:/app/db/ \
@@ -31,3 +32,7 @@ reset:
 	rm -rf ./db.sqlite
 
 restart: reset start
+
+
+migrate:
+	docker exec ${CONTAINER_NAME} npm run db:migrate:prod
