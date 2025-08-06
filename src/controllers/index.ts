@@ -6,7 +6,7 @@ import TelegramBot, {
 } from 'node-telegram-bot-api';
 import { replyKeyboards } from '../keyboards';
 import { User } from '../services/user';
-import { logger } from '../utils';
+import { logger, safeSendMessage } from '../utils';
 import { getRates } from '../api';
 import { UserService, userService } from '../services/users';
 import { ratesService } from '../services/rates';
@@ -41,7 +41,7 @@ class BotController {
   private reply = async (props: ReplyProps) => {
     const { user, message, replyMarkup } = props;
 
-    this.bot.sendMessage(Number(user.id), message, {
+    await safeSendMessage(this.bot, Number(user.id), message, {
       parse_mode: 'Markdown',
       ...(replyMarkup && {
         reply_markup: {
@@ -56,7 +56,16 @@ class BotController {
 
     const response = await getRates();
 
+    const replyMarkup = user.isAdmin
+      ? replyKeyboards.defaultAdminReplyKeyboard
+      : replyKeyboards.defaultUserReplyKeyboard;
+
     if (!response.ok) {
+      this.reply({
+        user,
+        message: 'The rates are not available at the moment.',
+        replyMarkup,
+      });
       throw new ApiError('There is no connection to the server');
     }
 
@@ -67,10 +76,6 @@ class BotController {
     const userDate = getUserTime(user.utcOffset, date);
 
     const message = `Rates at ${userDate}:\n\n\`${ratesString}\``;
-
-    const replyMarkup = user.isAdmin
-      ? replyKeyboards.defaultAdminReplyKeyboard
-      : replyKeyboards.defaultUserReplyKeyboard;
 
     this.reply({ user, message, replyMarkup });
   };

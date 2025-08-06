@@ -13,9 +13,9 @@ export const getRates = async (): Promise<Response<HistoryData>> => {
   try {
     const { data } = await axios.get<HistoryData>(url);
 
-    return { ok: true, data: data };
+    return { ok: true, data };
   } catch (error) {
-    console.error('Error fetching rates', error);
+    console.error('Error fetching rates');
     return { ok: false, error: 'Something went wrong' };
   }
 };
