@@ -79,4 +79,8 @@ export class User implements UserDTO {
   setUserUtcOffset = () => {
     return this.context.setUserUtcOffset(BigInt(this.id));
   };
+
+  toString = () => {
+    return `User: ${this.id}, ${this.username}, ${this.role}`;
+  }
 }

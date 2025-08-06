@@ -1,4 +1,4 @@
-import { getRates } from '../api';
+import { getRates, HistoryRate } from '../api';
 
 enum Currency {
   USD = 'USD',
@@ -7,6 +7,26 @@ enum Currency {
   TRY = 'TRY',
   CNY = 'CNY',
 }
+
+const getIcon = (a: number) => (a > 0 ? '🔺' : '🔻');
+
+const getDiffInfo = (
+  current: number | undefined,
+  prev: number | undefined,
+  diffType: 'h' | 'd',
+) => {
+  if (!prev || !current) {
+    return '';
+  }
+
+  const diff = current - prev;
+
+  if (Math.abs(diff) < 0.001) {
+    return '';
+  }
+
+  return `${diffType}: ${getIcon(diff)} ${diff.toFixed(2).padStart(5, ' ')};`;
+};
 
 class RatesService {
   ratesApi = getRates;
@@ -20,21 +40,26 @@ class RatesService {
       throw new Error(response.error);
     }
 
-    const rates = this.currencies.reduce<{ currency: string; rate: string }[]>(
-      (acc, currency) => {
-        const rate = response.data[currency].toFixed(2);
+    const result = this.currencies.reduce<string[]>((acc, currency) => {
+      const rates = response.data[currency] ?? [];
 
-        const item = {
-          currency,
-          rate,
-        };
+      const lastHour = rates[0] as HistoryRate | undefined;
+      const prevHour = rates[1] as HistoryRate | undefined;
+      const prevDay = rates[24] as HistoryRate | undefined;
 
-        return [...acc, item];
-      },
-      [],
-    );
+      const lastHourInfo = lastHour
+        ? `${lastHour.rate.toFixed(2).padStart(6, ' ')}`
+        : 'No data';
+      const currencyData = `${currency.padEnd(4, ' ')}: ${lastHourInfo}`;
+      const hourInfo = getDiffInfo(lastHour?.rate, prevHour?.rate, 'h');
+      const dayInfo = getDiffInfo(lastHour?.rate, prevDay?.rate, 'd');
 
-    return rates;
+      const string = `${currencyData} ${hourInfo} ${dayInfo}`;
+
+      return [...acc, string];
+    }, []);
+
+    return result.join('\n');
   };
 }
 

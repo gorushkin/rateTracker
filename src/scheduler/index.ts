@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import TelegramBot from 'node-telegram-bot-api';
 import { BotController } from '../controllers';
 import { userService } from '../services/users';
+import { log } from '../utils/';
 
 enum INTERVALS {
   HOUR = '0 * * * *',
@@ -15,23 +16,33 @@ export const scheduler = async (botController?: BotController) => {
     throw new Error('Bot is not initialized');
   }
 
+  log.info('Scheduler started');
+
   cron.schedule(INTERVALS.HOUR, async () => {
-    const users = await userService.getUsers();
-
-    const currentTime = dayjs();
-
-    const promises = users.map((user) => {
-      const shouldUserBeUpdated = user.shouldUserBeUpdated(currentTime);
-
-      if (shouldUserBeUpdated) {
-        botController.onGetRates(user);
-      }
-    });
-
     try {
-      Promise.all(promises);
+      const users = await userService.getUsers();
+
+      const currentTime = dayjs();
+
+      const promises = users.map(async (user) => {
+        try {
+          const shouldUserBeUpdated = user.shouldUserBeUpdated(currentTime);
+
+          if (shouldUserBeUpdated) {
+            await botController.onGetRates(user);
+          }
+        } catch (error) {
+          log.error(
+            `Error processing user ${user.id} in scheduler: ${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
+      });
+
+      await Promise.all(promises);
     } catch (error) {
-      console.error(error);
+      log.error(
+        `Error in scheduled task: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   });
 };

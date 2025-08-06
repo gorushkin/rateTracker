@@ -1,24 +1,21 @@
 import axios from 'axios';
+import { config } from '../config';
 
-type Rates = Record<string, number>;
+export type HistoryRate = { date: string; rate: number };
 
-type RatesInfo = {
-  rates: Rates;
-  base: string;
-  date: string;
-};
+export type HistoryData = Record<string, HistoryRate[]>;
 
-const url = 'http://46.19.64.117/currency-rates/oer';
+const url = `${config.API_URL}/currency-rates/rates`;
 
 export type Response<T> = { ok: true; data: T } | { ok: false; error: string };
 
-export const getRates = async (): Promise<Response<Rates>> => {
+export const getRates = async (): Promise<Response<HistoryData>> => {
   try {
-    const response = await axios.get<RatesInfo>(url);
+    const { data } = await axios.get<HistoryData>(url);
 
-    return { ok: true, data: response.data.rates };
+    return { ok: true, data };
   } catch (error) {
-    console.error('Error fetching rates', error);
+    console.error('Error fetching rates');
     return { ok: false, error: 'Something went wrong' };
   }
 };

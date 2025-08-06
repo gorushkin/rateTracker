@@ -6,7 +6,7 @@ import TelegramBot, {
 } from 'node-telegram-bot-api';
 import { replyKeyboards } from '../keyboards';
 import { User } from '../services/user';
-import { logger } from '../utils';
+import { logger, safeSendMessage } from '../utils';
 import { getRates } from '../api';
 import { UserService, userService } from '../services/users';
 import { ratesService } from '../services/rates';
@@ -16,7 +16,8 @@ import {
   offsetToMinutes,
   validateTimeZone,
 } from '../routes/libs';
-import { ApiError, ValidationError } from '../errors';
+import { ApiError, ValidationError } from '../utils/errors';
+import { log } from '../utils';
 
 type ReplyProps = {
   user: User;
@@ -40,7 +41,8 @@ class BotController {
   private reply = async (props: ReplyProps) => {
     const { user, message, replyMarkup } = props;
 
-    this.bot.sendMessage(Number(user.id), message, {
+    await safeSendMessage(this.bot, Number(user.id), message, {
+      parse_mode: 'Markdown',
       ...(replyMarkup && {
         reply_markup: {
           ...replyMarkup,
@@ -50,35 +52,36 @@ class BotController {
   };
 
   onGetRates = async (user: User) => {
-    logger.addLog('Getting rates', user);
+    log.controller(`Getting rates' ${user}`);
 
     const response = await getRates();
-
-    if (!response.ok) {
-      throw new ApiError('There is no connection to the server');
-    }
-
-    const date = new Date();
-
-    const rates = await ratesService.fetchRates();
-
-    const userDate = getUserTime(user.utcOffset, date);
-
-    const ratesString = rates
-      .map(({ currency, rate }) => `${currency}: ${rate}`)
-      .join('\n');
-
-    const message = `Rates at ${userDate}:\n\n${ratesString}`;
 
     const replyMarkup = user.isAdmin
       ? replyKeyboards.defaultAdminReplyKeyboard
       : replyKeyboards.defaultUserReplyKeyboard;
 
+    if (!response.ok) {
+      this.reply({
+        user,
+        message: 'The rates are not available at the moment.',
+        replyMarkup,
+      });
+      throw new ApiError('There is no connection to the server');
+    }
+
+    const date = new Date();
+
+    const ratesString = await ratesService.fetchRates();
+
+    const userDate = getUserTime(user.utcOffset, date);
+
+    const message = `Rates at ${userDate}:\n\n\`${ratesString}\``;
+
     this.reply({ user, message, replyMarkup });
   };
 
   onSettings = async (user: User) => {
-    logger.addLog('Settings', user);
+    log.controller(`Settings ${user}`);
 
     const message = 'There are some settings for you:';
 
@@ -94,7 +97,7 @@ class BotController {
   };
 
   onHourlyUpdatesSettings = async (user: User) => {
-    logger.addLog('HourlyUpdatesSettings', user);
+    log.controller(`HourlyUpdatesSettings ${user}`);
 
     const { isHourlyUpdateEnabled } = await user.toggleHourlyUpdates();
 
@@ -110,7 +113,7 @@ class BotController {
   };
 
   onDailyUpdatesSettings = async (user: User) => {
-    logger.addLog('DailyUpdatesSettings', user);
+    log.controller(`DailyUpdatesSettings ${user}`);
 
     const { isDailyUpdateEnabled } = await user.toggleDailyUpdate();
 
@@ -148,7 +151,7 @@ class BotController {
       throw new Error('User is not an admin');
     }
 
-    logger.addLog('System info', user);
+    log.controller(`System info ${user}`);
 
     const users = await this.userService.getUsers();
 
@@ -172,15 +175,11 @@ class BotController {
       throw new Error('User is not an admin');
     }
 
-    logger.addLog('View logs', user);
+    log.controller(`View logs ${user}`);
 
-    const logs = logger.getLogs();
+    const logs = logger.getLastLogs();
 
-    const logsString = logs
-      .map(({ time, message, id }) => `${id}: ${time} - ${message}`)
-      .join('\n');
-
-    const message = `Logs:\n\n${logsString}`;
+    const message = `Logs:\n\n${logs}`;
 
     this.reply({
       user,
@@ -234,7 +233,7 @@ class BotController {
   };
 
   defaultResponse = async (user: User) => {
-    logger.addLog('Default response', user);
+    log.response(`Default response for user ${user}`);
 
     const replyMarkup = user.isAdmin
       ? replyKeyboards.defaultAdminReplyKeyboard
