@@ -57,3 +57,4 @@ yarn-error.log*
 *.sqlite3
 *.db
 *.log
+log.txt
