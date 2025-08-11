@@ -7,7 +7,7 @@ stop:
 	docker stop ${CONTAINER_NAME}
 
 create:
-	docker rm -f ${CONTAINER_NAME} 2>/dev/null || true
+	docker exec ${CONTAINER_NAME} npm run db:migrate:prod
 	docker rm -f ${CONTAINER_NAME} 2>/dev/null || true
 	docker run -d \
 		-p ${PORT}:${PORT} \
